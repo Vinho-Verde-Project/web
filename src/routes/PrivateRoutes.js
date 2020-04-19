@@ -5,6 +5,7 @@ import Layout from "../components/Layouts";
 import Users from "../pages/Users";
 import Tasks from "../pages/Tasks";
 import Stages from "../pages/Stages";
+import Permissions from "../pages/Permissions";
 
 export default function PrivateRoutes() {
   return (
@@ -13,6 +14,7 @@ export default function PrivateRoutes() {
       <Route path="/stages" component={Stages} />
       <Route path="/tasks" component={Tasks} />
       <Route path="/users" component={Users} />
+      <Route path="/permissions" component={Permissions} />
     </Layout>
   );
 }
