@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Section, HeaderTitle, SectionHeader, LimitedSection } from "../styles";
 import { Tabs, Tab } from "@material-ui/core";
 import Item from "./Item";
+import { observer } from "mobx-react";
+import useStores from "../../../stores/useStores";
 
-export default function Feed() {
-  const [tabIndex, setTabIndex] = useState(0);
+function Feed() {
+  const [tab, setTab] = useState("ALL");
+  const { appStore } = useStores();
+
+  useEffect(() => {
+    appStore.fetchFeed(tab);
+  }, [appStore, tab]);
 
   return (
     <Section>
@@ -13,22 +20,24 @@ export default function Feed() {
           Feed
         </HeaderTitle>
         <Tabs
-          value={tabIndex}
-          onChange={(event, value) => setTabIndex(value)}
+          value={tab}
+          onChange={(event, value) => setTab(value)}
           scrollButtons="auto"
           variant="scrollable"
         >
-          <Tab label="Todos" />
-          <Tab label="Produção" />
-          <Tab label="Estoque" />
-          <Tab label="Falhas" />
+          <Tab value="ALL" label="Todos" />
+          <Tab value="PRODUCTION" label="Produção" />
+          <Tab value="STOCK" label="Estoque" />
+          <Tab value="FAIL" label="Falhas" />
         </Tabs>
       </SectionHeader>
       <LimitedSection>
-        {[0, 1, 2, 3, 4].map((el) => (
-          <Item key={el} />
+        {appStore.feed.map(({ id, content, ...post }) => (
+          <Item key={id} markdown={content} {...post} />
         ))}
       </LimitedSection>
     </Section>
   );
 }
+
+export default observer(Feed);
