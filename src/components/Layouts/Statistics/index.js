@@ -1,10 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Section, ScrollSection, BoldText } from "../styles";
 import HorizontalScroll from "react-scroll-horizontal";
 import Statistic from "./Statistic";
 import { Typography } from "@material-ui/core";
+import { observer } from "mobx-react";
+import useStores from "../../../stores/useStores";
 
-export default function Statistics() {
+function Statistics() {
+  const { appStore } = useStores();
+
+  useEffect(() => {
+    appStore.fetchStatistics();
+  }, [appStore]);
+
   return (
     <Section>
       <Typography component="h2" variant="h4">
@@ -12,9 +20,9 @@ export default function Statistics() {
       </Typography>
       <ScrollSection>
         <HorizontalScroll>
-          {[0, 1, 2, 3, 4, 5].map((el) => (
-            <Statistic key={el} title={"estátistica nº" + el} action={() => {}}>
-              <BoldText>{1000 * el}</BoldText>
+          {appStore.statistics.map(({ id, title, content }) => (
+            <Statistic key={id} title={title} action={() => {}}>
+              <BoldText>{content}</BoldText>
             </Statistic>
           ))}
         </HorizontalScroll>
@@ -22,3 +30,5 @@ export default function Statistics() {
     </Section>
   );
 }
+
+export default observer(Statistics);
