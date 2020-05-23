@@ -12,6 +12,7 @@ import _ from "lodash";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import InboxIcon from "@material-ui/icons/Inbox";
 import TagIcon from "@material-ui/icons/LocalOffer";
+import CategoryIcon from "@material-ui/icons/Label";
 import WineIcon from "@material-ui/icons/LocalBar";
 import LayersIcon from "@material-ui/icons/Layers";
 import DoneIcon from "@material-ui/icons/Done";
@@ -47,6 +48,11 @@ export default function SideBar({ isOpen }) {
             name: "Produtos",
             path: "/products",
             icon: <TagIcon />,
+          },
+          {
+            name: "Categorias",
+            path: "/categories",
+            icon: <CategoryIcon />,
           },
           {
             name: "Vinhos",

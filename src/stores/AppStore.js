@@ -2,10 +2,12 @@ import { observable, action } from "mobx";
 import Statistic from "../models/Statistic";
 import { Post } from "../models/Post";
 import { v4 as uuid } from "uuid";
+import Category from "../models/Category";
 
 const appStore = observable({
   statistics: [],
   feed: [],
+  categories: [],
 });
 
 appStore.fetchStatistics = action(() => {
@@ -48,6 +50,32 @@ appStore.fetchFeed = action((filter) => {
       new Date()
     ),
   ].filter((post) => post.type === filter || filter === "ALL");
+});
+
+appStore.fetchCategories = action(() => {
+  appStore.categories = [
+    new Category(
+      uuid(),
+      "Garrafa",
+      "Seco",
+      "Garrafa de vidro para armazenamento do vinho",
+      [
+        { key: "Volume", value: "ml" },
+        { key: "Diametro", value: "cm" },
+        { key: "Quantidade", value: "un" },
+      ]
+    ),
+    new Category(uuid(), "Rolha", "Seco", "", [
+      { key: "Diametro", value: "cm" },
+      { key: "Quantidade", value: "un" },
+    ]),
+  ];
+});
+
+appStore.deleteCategory = action((id) => {
+  appStore.categories = appStore.categories.filter(
+    (category) => category.id !== id
+  );
 });
 
 export default appStore;
