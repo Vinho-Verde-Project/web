@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Drawer,
   List,
@@ -8,9 +8,11 @@ import {
   makeStyles,
   ListSubheader,
 } from "@material-ui/core";
+import _ from "lodash";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import InboxIcon from "@material-ui/icons/Inbox";
 import TagIcon from "@material-ui/icons/LocalOffer";
+import CategoryIcon from "@material-ui/icons/Label";
 import WineIcon from "@material-ui/icons/LocalBar";
 import LayersIcon from "@material-ui/icons/Layers";
 import DoneIcon from "@material-ui/icons/Done";
@@ -27,6 +29,82 @@ const useStyles = makeStyles((theme) => ({
 export default function SideBar({ isOpen }) {
   const classes = useStyles();
   const { location, ...history } = useHistory();
+  const routes = useMemo(
+    () => [
+      {
+        name: "Dashboard",
+        path: "/",
+        icon: <DashboardIcon />,
+      },
+      {
+        name: "Gerenciamento",
+        group: [
+          {
+            name: "Estoque",
+            path: "/stock",
+            icon: <InboxIcon />,
+          },
+          {
+            name: "Produtos",
+            path: "/products",
+            icon: <TagIcon />,
+          },
+          {
+            name: "Categorias",
+            path: "/categories",
+            icon: <CategoryIcon />,
+          },
+          {
+            name: "Vinhos",
+            path: "/wine",
+            icon: <WineIcon />,
+          },
+        ],
+      },
+      {
+        name: "Produção",
+        group: [
+          {
+            name: "Etapas",
+            path: "/stages",
+            icon: <LayersIcon />,
+          },
+          {
+            name: "Tarefas",
+            path: "/tasks",
+            icon: <DoneIcon />,
+          },
+        ],
+      },
+      {
+        name: "Administração",
+        group: [
+          {
+            name: "Usuários",
+            path: "/users",
+            icon: <GroupIcon />,
+          },
+          {
+            name: "Permissões",
+            path: "/permissions",
+            icon: <LockIcon />,
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  const Item = ({ name, path, icon }) => (
+    <ListItem
+      selected={location.pathname === path}
+      button
+      onClick={() => history.push(path)}
+    >
+      <ListItemIcon>{icon}</ListItemIcon>
+      <ListItemText primary={name} />
+    </ListItem>
+  );
 
   return (
     <Drawer
@@ -37,96 +115,18 @@ export default function SideBar({ isOpen }) {
       elevation={0}
     >
       <List>
-        <ListItem
-          selected={location.pathname === "/"}
-          button
-          onClick={() => history.push("/")}
-        >
-          <ListItemIcon>
-            <DashboardIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Dashboard"} />
-        </ListItem>
-        <ListSubheader component="div">Gerenciamento</ListSubheader>
-        <ListItem
-          selected={location.pathname === "/storage"}
-          button
-          onClick={() => history.push("/storage")}
-        >
-          <ListItemIcon>
-            <InboxIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Estoque"} />
-        </ListItem>
-
-        <ListItem
-          button
-          selected={location.pathname === "/products"}
-          onClick={() => history.push("/products")}
-        >
-          <ListItemIcon>
-            <TagIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Produtos"} />
-        </ListItem>
-
-        <ListItem
-          button
-          selected={location.pathname === "/wine"}
-          onClick={() => history.push("/wine")}
-        >
-          <ListItemIcon>
-            <WineIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Vinhos"} />
-        </ListItem>
-
-        <ListSubheader component="div">Produção</ListSubheader>
-        <ListItem
-          button
-          selected={location.pathname === "/stages"}
-          onClick={() => history.push("/stages")}
-        >
-          <ListItemIcon>
-            <LayersIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Etapas"} />
-        </ListItem>
-
-        <ListItem
-          button
-          selected={location.pathname === "/tasks"}
-          onClick={() => history.push("/tasks")}
-        >
-          <ListItemIcon>
-            <DoneIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Tarefas"} />
-        </ListItem>
-
-        <ListSubheader component="div">Administração</ListSubheader>
-
-        <ListItem
-          button
-          selected={location.pathname === "/users"}
-          onClick={() => history.push("/users")}
-        >
-          <ListItemIcon>
-            <GroupIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Usuários"} />
-        </ListItem>
-
-        <ListItem
-          button
-          selected={location.pathname === "/permissions"}
-          onClick={() => history.push("/permissions")}
-        >
-          <ListItemIcon>
-            <LockIcon />
-          </ListItemIcon>
-          <ListItemText primary={"Permissões"} />
-        </ListItem>
+        {routes.map(({ name, path, icon, group }) =>
+          _.isEmpty(group) ? (
+            <Item key={path} name={name} path={path} icon={icon} />
+          ) : (
+            <React.Fragment key={name}>
+              <ListSubheader component="div">{name}</ListSubheader>
+              {group.map((props) => (
+                <Item key={props.path} {...props} />
+              ))}
+            </React.Fragment>
+          )
+        )}
       </List>
     </Drawer>
   );

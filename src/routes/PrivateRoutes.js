@@ -7,14 +7,23 @@ import Tasks from "../pages/Tasks";
 import Stages from "../pages/Stages";
 import Permissions from "../pages/Permissions";
 import Wine from "../pages/Wine";
+import Stock from "../pages/Stock";
+import Products from "../pages/Products";
+import Categories from "../pages/Categories";
 
 export default function PrivateRoutes() {
   return (
     <Layout>
       <Route path="/" exact component={Dashboard} />
+      {/* Materials */}
+      <Route path="/stock" component={Stock} />
+      <Route path="/products" component={Products} />
+      <Route path="/categories" component={Categories} />
+      <Route path="/wine" component={Wine} />
+      {/* Production */}
       <Route path="/stages" component={Stages} />
       <Route path="/tasks" component={Tasks} />
-      <Route path="/wine" component={Wine} />
+      {/* Admin */}
       <Route path="/users" component={Users} />
       <Route path="/permissions" component={Permissions} />
     </Layout>
