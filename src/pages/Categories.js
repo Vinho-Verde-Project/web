@@ -35,6 +35,7 @@ function Categories() {
     } else {
       appStore.editCategory(category);
     }
+    appStore.clearSelectedCategory();
   };
 
   const onEdit = (id) => {

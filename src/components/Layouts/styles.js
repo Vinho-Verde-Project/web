@@ -30,7 +30,7 @@ const ScrollSection = styled.div`
 
 const SectionHeader = styled.div`
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   gap: 1rem;
   align-items: center;
   justify-items: ${({ justify }) => justify || "center"};

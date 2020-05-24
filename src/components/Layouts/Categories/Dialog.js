@@ -69,6 +69,7 @@ export default function Dialog({
   const handleSubmit = () => {
     onSubmit(category);
     setDialog(false);
+    setCategory(defaultCategory);
   };
 
   return (
@@ -77,7 +78,9 @@ export default function Dialog({
       onClose={() => setDialog(false)}
       aria-labelledby="category-dialog"
     >
-      <DialogTitle id="category-dialog">Criar Nova Categoria</DialogTitle>
+      <DialogTitle id="category-dialog">
+        {_.isEmpty(category.id) ? "Criar" : "Editar"} Categoria
+      </DialogTitle>
       <DialogContent>
         <FormControl className={classes.input}>
           <TextField
