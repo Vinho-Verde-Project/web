@@ -3,10 +3,15 @@ import Statistic from "../models/Statistic";
 import { Post } from "../models/Post";
 import { v4 as uuid } from "uuid";
 import Category from "../models/Category";
+import Product from "../models/Product";
 
 const appStore = observable({
   statistics: [],
   feed: [],
+
+  products: [],
+  selectedProduct: null,
+
   categories: [],
   selectedCategory: null,
 });
@@ -54,24 +59,110 @@ appStore.fetchFeed = action((filter) => {
 });
 
 //
-// Category
+// Products
+//
+appStore.fetchProducts = action((filter) => {
+  appStore.products = [
+    new Product(
+      uuid(),
+      "Garrafa XYZ",
+      new Category(
+        "0101",
+        "Garrafa",
+        "RAW",
+        "Garrafa de vidro para armazenamento do vinho",
+        [
+          { key: "Volume", value: "ml" },
+          { key: "Diametro", value: "cm" },
+        ]
+      ),
+      10,
+      "Un.",
+      [
+        {
+          attribute: { key: "Volume", value: "ml" },
+          value: 500,
+        },
+        {
+          attribute: { key: "Diametro", value: "cm" },
+          value: 2,
+        },
+      ]
+    ),
+    new Product(
+      uuid(),
+      "Mosto para vinho X",
+      new Category(
+        uuid(),
+        "Mosto",
+        "WET",
+        "Mosto utilizado na produção de vinho",
+        []
+      ),
+      10,
+      "Litro",
+      []
+    ),
+  ].filter((product) => product.category.type === filter);
+});
+
+appStore.deleteProduct = action((id) => {
+  appStore.products = appStore.products.filter((product) => product.id !== id);
+});
+
+appStore.createProduct = action(
+  ({ title, category, quantity, unity, attributes }) => {
+    console.log({ title, category, quantity, unity, attributes });
+    appStore.products.push(
+      new Product(uuid(), title, category, quantity, unity, attributes)
+    );
+  }
+);
+
+appStore.editProduct = action(
+  ({ id, title, category, quantity, unity, attributes }) => {
+    const index = appStore.products.findIndex((product) => product.id === id);
+
+    if (index > -1) {
+      appStore.products[index] = new Product(
+        id,
+        title,
+        category,
+        quantity,
+        unity,
+        attributes
+      );
+    }
+  }
+);
+
+appStore.setSelectedProduct = action((id) => {
+  appStore.selectedProduct = appStore.products.find(
+    (product) => product.id === id
+  );
+});
+
+appStore.clearSelectedProduct = action(() => {
+  appStore.selectedProduct = null;
+});
+
+//
+// Categories
 //
 appStore.fetchCategories = action(() => {
   appStore.categories = [
     new Category(
-      uuid(),
+      "0101",
       "Garrafa",
       "RAW",
       "Garrafa de vidro para armazenamento do vinho",
       [
         { key: "Volume", value: "ml" },
         { key: "Diametro", value: "cm" },
-        { key: "Quantidade", value: "un" },
       ]
     ),
     new Category(uuid(), "Rolha", "RAW", "", [
       { key: "Diametro", value: "cm" },
-      { key: "Quantidade", value: "un" },
     ]),
   ];
 });
@@ -90,8 +181,6 @@ appStore.createCategory = action(({ title, type, description, attributes }) => {
 
 appStore.editCategory = action(
   ({ id, title, type, description, attributes }) => {
-    console.log({ title, type, description, attributes });
-
     const index = appStore.categories.findIndex(
       (category) => category.id === id
     );
