@@ -8,6 +8,7 @@ const appStore = observable({
   statistics: [],
   feed: [],
   categories: [],
+  selectedCategory: null,
 });
 
 appStore.fetchStatistics = action(() => {
@@ -52,12 +53,15 @@ appStore.fetchFeed = action((filter) => {
   ].filter((post) => post.type === filter || filter === "ALL");
 });
 
+//
+// Category
+//
 appStore.fetchCategories = action(() => {
   appStore.categories = [
     new Category(
       uuid(),
       "Garrafa",
-      "Seco",
+      "RAW",
       "Garrafa de vidro para armazenamento do vinho",
       [
         { key: "Volume", value: "ml" },
@@ -65,7 +69,7 @@ appStore.fetchCategories = action(() => {
         { key: "Quantidade", value: "un" },
       ]
     ),
-    new Category(uuid(), "Rolha", "Seco", "", [
+    new Category(uuid(), "Rolha", "RAW", "", [
       { key: "Diametro", value: "cm" },
       { key: "Quantidade", value: "un" },
     ]),
@@ -76,6 +80,42 @@ appStore.deleteCategory = action((id) => {
   appStore.categories = appStore.categories.filter(
     (category) => category.id !== id
   );
+});
+
+appStore.createCategory = action(({ title, type, description, attributes }) => {
+  appStore.categories.push(
+    new Category(uuid(), title, type, description, attributes)
+  );
+});
+
+appStore.editCategory = action(
+  ({ id, title, type, description, attributes }) => {
+    console.log({ title, type, description, attributes });
+
+    const index = appStore.categories.findIndex(
+      (category) => category.id === id
+    );
+
+    if (index > -1) {
+      appStore.categories[index] = new Category(
+        id,
+        title,
+        type,
+        description,
+        attributes
+      );
+    }
+  }
+);
+
+appStore.setSelectedCategory = action((id) => {
+  appStore.selectedCategory = appStore.categories.find(
+    (category) => category.id === id
+  );
+});
+
+appStore.clearSelectedCategory = action(() => {
+  appStore.selectedCategory = null;
 });
 
 export default appStore;
