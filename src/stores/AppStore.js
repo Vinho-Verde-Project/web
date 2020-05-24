@@ -4,6 +4,7 @@ import { Post } from "../models/Post";
 import { v4 as uuid } from "uuid";
 import Category from "../models/Category";
 import Product from "../models/Product";
+import Stock from "../models/Stock";
 
 const appStore = observable({
   statistics: [],
@@ -14,6 +15,9 @@ const appStore = observable({
 
   categories: [],
   selectedCategory: null,
+
+  stocks: [],
+  selectedStock: null,
 });
 
 appStore.fetchStatistics = action(() => {
@@ -57,6 +61,85 @@ appStore.fetchFeed = action((filter) => {
     ),
   ].filter((post) => post.type === filter || filter === "ALL");
 });
+
+//
+// Stock
+//
+appStore.fetchStocks = action((filter) => {
+  appStore.stocks = [
+    new Stock(
+      uuid(),
+      "Doce Campos",
+      "WET",                          // New -> Product/Wine
+      100,
+      "Un.",
+      "A2 Leste",
+      new Date().toLocaleString(),
+      "Nuno Silva",                   // New -> Emplooye
+    ),
+    new Stock(
+      uuid(),
+      "Gallard Premium",
+      "WET",                          // New -> Product/Wine
+      250,
+      "Un.",
+      "A5 Leste",
+      new Date().toLocaleString(),
+      "Marcos Conti",                   // New -> Emplooye
+    ),
+    new Stock(
+      uuid(),
+      "Uva Crimson",
+      "RAW",                          // New -> Product/Wine
+      88,
+      "KG",
+      "B4 Oeste",
+      new Date().toLocaleString(),
+      "Maria Joana",                   // New -> Emplooye
+    )
+  ].filter((stock) => stock.type === filter);
+});
+
+appStore.setSelectedStock = action((id) => {
+  appStore.selectedStock = appStore.stocks.find(
+    (stock) => stock.id === id
+  );
+});
+
+appStore.clearSelectedStock = action(() => {
+  appStore.selectedStock = null;
+});
+
+appStore.deleteStock = action((id) => {
+  appStore.stocks = appStore.stocks.filter((stock) => stock.id !== id);
+});
+
+appStore.editStock = action(
+  ({ id, title, type, quantity, unity, warehouse, entryDate, employee }) => {
+    const index = appStore.stocks.findIndex((stock) => stock.id === id);
+
+    if (index !== -1) {
+      appStore.stocks[index] = new Stock(
+        id,
+        title,
+        type,
+        quantity,
+        unity,
+        warehouse,
+        entryDate,
+        employee,
+      );
+    }
+  }
+);
+
+appStore.createStock = action(
+  ({ title, type, quantity, unity, warehouse, entryDate, employee }) => {
+    appStore.stocks.push(
+      new Stock(uuid(), title, type, quantity, unity, warehouse, entryDate, employee)
+    );
+  }
+);
 
 //
 // Products
