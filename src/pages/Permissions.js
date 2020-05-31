@@ -183,16 +183,71 @@ export default function Permissions() {
   }
 
   function handleDialogSendEditRole() {
-    const data = {
+    /*const data = {
       id: dialogContent.id,
       name: dialogContent.name,
       acessLevel: calcPermission()
+    }*/
+
+    if (calcPermission() === 0) {
+      return alert("Erro: Nenhuma permissao foi selecionada.");
     }
+
+    api.post('/', {
+      "query": `{permission(id: ${calcPermission()}) { id }}`,
+    }).then(function (response) {
+
+      if (response.data.permission == null) {
+        api.post('/', {
+          "query": "mutation($permission: InputPermissionType) {addPermission(permission:$permission){ id }}",
+	        "variables": `{"permission":{"id":${calcPermission()},"desc":"-"}}`
+        }).then(function (response2) {
+          console.log("Criado-Permissao: ",response2);
+
+          api.post('/', {
+            "query": "mutation($role: InputRoleType) {updateRole(role:$role){ id desc permissionId }}",
+            "variables": `{"role":{"id":${dialogContent.id},"desc":"${dialogContent.name}","permissionId":${calcPermission()}}}`
+          }).then(function (response3) {
+            console.log("Editado-Role: ",response3);
+            setUpdateRequest(!updateRequest);
+          }).catch(function (error3) {
+            console.log("Erro3: ",error3);
+          });
+
+        }).catch(function (error2) {
+          console.log("Erro2: ",error2);
+        });
+      } else {
+
+        api.post('/', {
+          "query": "mutation($role: InputRoleType) {updateRole(role:$role){ id desc permissionId }}",
+          "variables": `{"role":{"id":${dialogContent.id},"desc":"${dialogContent.name}","permissionId":${calcPermission()}}}`
+        }).then(function (response4) {
+          console.log("Editado-Role (com permissao ja existente): ",response4);
+          setUpdateRequest(!updateRequest);
+        }).catch(function (error4) {
+          console.log("Erro3: ",error4);
+        });
+
+      }
+
+    }).catch(function (error) {
+      console.log("Erro: ",error);
+      alert("Erro ao cadastrar!\nTente novamente");
+    });
+    
     handleDialogClose();
-    console.log("Envia um chamada PUT com:",data);
+    //console.log("Envia um chamada PUT com:",data);
   }
 
   function handleDialogSendNewRole() {
+
+    if (calcPermission() === 0) {
+      return alert("Erro: Nenhuma permissao foi selecionada.");
+    }
+    if (dialogContent.name == null || dialogContent.name === "") {
+      return alert("Erro: Nenhum nome foi inserido!");
+    }
 
     api.post('/', {
       "query": `{permission(id: ${calcPermission()}) { id }}`,
@@ -237,13 +292,16 @@ export default function Permissions() {
       alert("Erro ao cadastrar!\nTente novamente");
     });
 
-    const data = {
+    handleDialogClose();
+
+    /*const data = {
       id: dialogContent.id,
       name: dialogContent.name,
       acessLevel: calcPermission()
     }
-    handleDialogClose();
+    
     console.log("Envia um chamada POST com:",data);
+    */
   }
 
   function handleRemoveDialog() {

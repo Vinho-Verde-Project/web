@@ -5,7 +5,7 @@ import AddOutlinedIcon from '@material-ui/icons/AddOutlined';
 import ReactPhoneInput from 'react-phone-input-mui';
 import CustomGrid from '../components/Layouts/User/CustomGrid';
 import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, InputLabel, Select } from '@material-ui/core';
-
+import api from '../services/api';
 
 const useStyles = makeStyles((theme) => ({
   defaultMargin: {
@@ -72,13 +72,15 @@ export default function Users() {
     {id: 4, name: 'Catrine Bors', role: 'Lead Design', username: 'paiaco', phone: '0988776970', email: 'ros@gmail.com', birthday: '12/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
   ];
 
-  const roleList = [
-    {id: 0, name: 'Assistant'},
+  const [roleList,setRoleList] = useState([
+    /*{id: 0, name: 'Assistant'},
     {id: 1, name: 'Engineer'},
     {id: 2, name: 'Developer'},
     {id: 3, name: 'Cloud Expert'},
-    {id: 4, name: 'Lead Design'}
-  ]
+    {id: 4, name: 'Lead Design'}*/
+  ]);
+
+  const [isEdit,setIsEdit] = useState(false);
 
   const [dialogOpen, setdialogOpen] = useState(false);
   const [dialogContent, setdialogContent] = useState( (i => { i = rows[0]; return i = {}}) );
@@ -99,11 +101,13 @@ export default function Users() {
   };
 
   function handleEditUser(data) {
+    setIsEdit(true);
     setdialogContent(data);
     return handleDialogOpen();
   }
 
   function handleNewUser() {
+    setIsEdit(false);
     setdialogContent( i => { i = rows[0]; return i = {}} );
     return handleDialogOpen();
   }
@@ -121,8 +125,41 @@ export default function Users() {
     console.log("Envia um chamada DELETE com:",data);
   }
 
+  const [onceRolesLoad,setOnceRolesLoad] = useState(true);
+
+  function loadRoles() {
+    api.post('/', {
+      "query": `{roles { id desc }}`
+    }).then(function (response) {
+
+      let newRow = [];
+      response.data.roles.map((role) => {
+        newRow.push({id: role.id, name: role.desc});
+      });
+
+      setRoleList(newRow);
+      
+    }).catch(function (error) {
+      console.log("Erro: ",error);
+    });
+  }
+
+  function handleDialogSendEditUser() {
+    console.log("EDIT")
+    console.log(dialogContent);
+  }
+
+  function handleDialogSendNewUser() {
+    console.log("NEW")
+    console.log(dialogContent);
+  }
+
   useEffect(() => {
     // effectCarregarUsuarios
+    if (onceRolesLoad) {
+      setOnceRolesLoad(false);
+      loadRoles();
+    }
   }, []);
 
   return (
@@ -151,10 +188,10 @@ export default function Users() {
 
 
     <Dialog open={dialogOpen} onClose={handleDialogClose} aria-labelledby="form-dialog-title">
-      <DialogTitle id="form-dialog-title">{dialogContent && dialogContent.name ? 'Edit User' : 'Register New User'}</DialogTitle>
+      <DialogTitle id="form-dialog-title">{isEdit ? 'Edit User' : 'Register New User'}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {dialogContent && dialogContent.name ? 'Formulary to modify data of an existing user.' : 'Formulary to register new user.'}
+          {isEdit ? 'Formulary to modify data of an existing user.' : 'Formulary to register new user.'}
         </DialogContentText>
 
         <TextField
@@ -162,7 +199,7 @@ export default function Users() {
           margin="dense"
           id="name"
           label="Full Name"
-          defaultValue={dialogContent ? dialogContent.name : ''}
+          defaultValue={isEdit ? dialogContent.name : ''}
           fullWidth
         />
         <Grid container direction="row" justify="space-evenly">
@@ -174,7 +211,7 @@ export default function Users() {
                 label="NIF"
                 fullWidth
                 type="number"
-                defaultValue={dialogContent ? dialogContent.name : ''}
+                defaultValue={isEdit ? dialogContent.nif : ''}
               /></Box>
           </Grid>
           <Grid item xs={6}>
@@ -185,7 +222,7 @@ export default function Users() {
                 label="Birthday Date"
                 type="date"
                 fullWidth
-                defaultValue={dialogContent && dialogContent.birthday ? convertDate(dialogContent.birthday) : ''}
+                defaultValue={isEdit ? convertDate(dialogContent.birthday) : ''}
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -197,7 +234,7 @@ export default function Users() {
           margin="dense"
           id="address"
           label="Full Address"
-          defaultValue={dialogContent ? dialogContent.address : ''}
+          defaultValue={isEdit ? dialogContent.address : ''}
           fullWidth
         />
         <Grid container direction="row" justify="space-evenly" alignItems="flex-end">
@@ -207,7 +244,7 @@ export default function Users() {
               id="email"
               label="Email Address"
               type="email"
-              defaultValue={dialogContent ? dialogContent.email : ''}
+              defaultValue={isEdit ? dialogContent.email : ''}
               fullWidth
             /></Box>
           <Box marginLeft={1}>
@@ -235,7 +272,8 @@ export default function Users() {
                 id="username"
                 label="UserName"
                 fullWidth
-                defaultValue={dialogContent ? dialogContent.username : ''}
+                onChange={(e) => setdialogContent({ ...dialogContent, username: e.target.value })}
+                defaultValue={isEdit ? dialogContent.username : ''}
               /></Box>
           </Grid>
           <Grid item xs={6}>
@@ -246,7 +284,6 @@ export default function Users() {
                 native
                 variant='standard'
                 onChange={(e) => setdialogContent({ ...dialogContent, role: e.target.value })}
-                value={dialogContent.role}
                 inputProps={{
                   name: 'key',
                   id: 'standard-key-native-simple',
@@ -283,7 +320,7 @@ export default function Users() {
         <Button onClick={handleDialogClose} size="large" color="primary">
           Cancel
         </Button>
-        <Button onClick={handleDialogClose} size="large" className={dialogContent && dialogContent.name ? classes.modalButtonEdit : classes.modalButtonRegister}>
+        <Button onClick={isEdit ? handleDialogSendEditUser : handleDialogSendNewUser} size="large" className={dialogContent && dialogContent.name ? classes.modalButtonEdit : classes.modalButtonRegister}>
           {dialogContent && dialogContent.name ? 'Save Edit' : 'Register'}
         </Button>
       </DialogActions>
