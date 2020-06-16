@@ -64,13 +64,17 @@ export default function Users() {
     { key: 'actions', name: 'Actions', width: 80 },
   ].map(c => ({ ...c, ...defaultColumnProperties }));
   
-  const rows = [
+  const [updateRequest, setUpdateRequest] = useState(true);
+
+  const [rows,setRows] = useState([
+    /*
     {id: 0, name: 'Ros Main', role: 'Assistant', username: 'paiaco', phone: '351912030399', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
     {id: 1, name: 'Calvin Malk', role: 'Engineer', username: 'paiaco', phone: '2141212412', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
     {id: 2, name: 'Wester Park', role: 'Developer', username: 'paiaco', phone: '64564644589', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
     {id: 3, name: 'Filer Ispor', role: 'Cloud Expert', username: 'paiaco', phone: '2654869345', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
     {id: 4, name: 'Catrine Bors', role: 'Lead Design', username: 'paiaco', phone: '0988776970', email: 'ros@gmail.com', birthday: '12/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
-  ];
+    */
+  ]);
 
   const [roleList,setRoleList] = useState([
     /*{id: 0, name: 'Assistant'},
@@ -154,13 +158,47 @@ export default function Users() {
     console.log(dialogContent);
   }
 
+  function updateTable() {
+    api.post('/', {
+      "query": `{  employees {
+        id
+        username
+        firstName
+        lastName
+        nif
+        birthdate
+        adress
+        phone
+        email
+        hashedPassword      
+        roleId
+      }
+    }`
+    }).then(function (response) {
+      //{id: 0, name: 'Ros Main', role: 'Assistant', username: 'paiaco', phone: '351912030399', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
+      let newRow = [];
+      
+      response.data.employees.map((row) => {
+        //let rowName = roleList.reduce(roleItem => role.roleId === roleItem.id);
+        newRow.push({id: row.id, name: row.firstName + " " + row.lastName, firstName: row.firstName, lastName: row.lastName, nif: row.nif, role: row.roleId, username: row.username, phone: row.phone, email: row.email, birthday: row.birthdate, address: row.adress, password: row.hashedPassword , actions: ''});
+      });
+
+      setRows(newRow);
+      
+    }).catch(function (error) {
+      console.log("Erro: ",error);
+    });
+  }
+
   useEffect(() => {
-    // effectCarregarUsuarios
     if (onceRolesLoad) {
       setOnceRolesLoad(false);
       loadRoles();
+      updateTable();
+    } else {
+      updateTable();
     }
-  }, []);
+  }, [updateRequest]);
 
   return (
   <>
@@ -198,9 +236,16 @@ export default function Users() {
           autoFocus
           margin="dense"
           id="name"
-          label="Full Name"
-          defaultValue={isEdit ? dialogContent.name : ''}
-          fullWidth
+          label="First Name"
+          defaultValue={isEdit ? dialogContent.firstName : ''}
+        />
+        <TextField
+          autoFocus
+          margin="dense"
+          id="lastname"
+          label="Last Name"
+          defaultValue={isEdit ? dialogContent.lastName : ''}
+
         />
         <Grid container direction="row" justify="space-evenly">
           <Grid item xs={6}>
@@ -284,13 +329,14 @@ export default function Users() {
                 native
                 variant='standard'
                 onChange={(e) => setdialogContent({ ...dialogContent, role: e.target.value })}
+                defaultValue={dialogContent.role}
                 inputProps={{
                   name: 'key',
                   id: 'standard-key-native-simple',
                 }}
               >
                 {roleList.map(role => (
-                  <option key={role.id} value={role.name}>{role.name}</option>)
+                  <option key={role.id} value={role.id}>{role.name}</option>)
                 )}
               </Select>
             </Box>
@@ -303,7 +349,8 @@ export default function Users() {
               id="pass"
               label="Password"
               type="password"
-              defaultValue={""}
+              onChange={(e) => setdialogContent({ ...dialogContent, password: e.target.value })}
+              defaultValue={isEdit ? dialogContent.password : ''}
             /></Box>
           <Box ml={1}>
             <TextField
@@ -311,7 +358,8 @@ export default function Users() {
               id="passconf"
               label="Password Confirmation"
               type="password"
-              defaultValue={""}
+              onChange={(e) => setdialogContent({ ...dialogContent, password: e.target.value })}
+              defaultValue={isEdit ? dialogContent.password : ''}
             />
           </Box>
         </Grid>
