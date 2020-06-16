@@ -87,7 +87,21 @@ export default function Users() {
   const [isEdit,setIsEdit] = useState(false);
 
   const [dialogOpen, setdialogOpen] = useState(false);
-  const [dialogContent, setdialogContent] = useState( (i => { i = rows[0]; return i = {}}) );
+  const [dialogContent, setdialogContent] = useState({
+    id: null, 
+    name: null,
+    firstName: null,
+    lastName: null, 
+    nif: null, 
+    role: null ,
+    username: null, 
+    phone: null, 
+    email: null, 
+    birthday: null, 
+    address: null, 
+    password: null,
+    passwordConfirm: null,
+  });
 
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
@@ -156,6 +170,78 @@ export default function Users() {
   function handleDialogSendNewUser() {
     console.log("NEW")
     console.log(dialogContent);
+
+    if (dialogContent.firstName === null || dialogContent.lastName === "") {
+      return alert("First/Last Name Missing!");
+    }
+
+    if (dialogContent.password !== dialogContent.passwordConfirm) {
+      return alert("The passwords does not match!");
+    }
+
+    /*if (dialogContent.name == null || dialogContent.name === "") {
+      return alert("Erro: Nenhum nome foi inserido!");
+    }*/
+
+    console.log(`{"employee":{
+      "id":0,
+      "username":${dialogContent.username},
+      "firstName":${dialogContent.firstName},
+      "lastName":${dialogContent.lastName},
+      "nif":${dialogContent.nif},
+      "birthdate":${dialogContent.birthday},
+      "adress":${dialogContent.address},
+      "phone":${dialogContent.phone},
+      "email":${dialogContent.email},
+      "hashedPassword":${dialogContent.password},
+      "createdAt":"12/25/2015",
+      "roleId":${dialogContent.role}
+    }}`);
+
+    api.post('/', {
+      "query": "mutation($employee: InputEmployeeType) {addEmployee(employee:$employee){ id username }}",
+      "variables": `{"employee":{
+      "id":0,
+      "username":"${dialogContent.username}",
+      "firstName":"${dialogContent.firstName}",
+      "lastName":"${dialogContent.lastName}",
+      "nif":"${dialogContent.nif}",
+      "birthdate":"${dialogContent.birthday}",
+      "adress":"${dialogContent.address}",
+      "phone":"${dialogContent.phone}",
+      "email":"${dialogContent.email}",
+      "hashedPassword":"${dialogContent.password}",
+      "createdAt":"12/25/2015",
+      "roleId":${dialogContent.role}
+    }}`
+    }).then(function (response2) {
+      console.log("Criado-User: ",response2);
+      alert("User Registred!");
+      handleDialogClose();
+      setUpdateRequest(!updateRequest);
+    }).catch(function (error2) {
+      console.log("Error: ");
+      console.log(error2);
+      alert("Error when trying to register! Verify your inputs!");
+    });
+      /* else {
+
+        api.post('/', {
+          "query": "mutation($role: InputRoleType) {addRole(role:$role){ id desc permissionId }}",
+          "variables": `{"role":{"id":0,"desc":"${dialogContent.name}","permissionId":${calcPermission()}}}`
+        }).then(function (response4) {
+          console.log("Criado-Role (com permissao ja existente): ",response4);
+          setUpdateRequest(!updateRequest);
+        }).catch(function (error4) {
+          console.log("Erro3: ",error4);
+        });
+
+      }
+
+    }).catch(function (error) {
+      console.log("Erro: ",error);
+      alert("Erro ao cadastrar!\nTente novamente");
+    });*/
   }
 
   function updateTable() {
@@ -238,13 +324,14 @@ export default function Users() {
           id="name"
           label="First Name"
           defaultValue={isEdit ? dialogContent.firstName : ''}
+          onChange={(e) => setdialogContent({ ...dialogContent, firstName: e.target.value })}
         />
         <TextField
-          autoFocus
           margin="dense"
           id="lastname"
           label="Last Name"
           defaultValue={isEdit ? dialogContent.lastName : ''}
+          onChange={(e) => setdialogContent({ ...dialogContent, lastName: e.target.value })}
 
         />
         <Grid container direction="row" justify="space-evenly">
@@ -257,6 +344,7 @@ export default function Users() {
                 fullWidth
                 type="number"
                 defaultValue={isEdit ? dialogContent.nif : ''}
+                onChange={(e) => setdialogContent({ ...dialogContent, nif: e.target.value })}
               /></Box>
           </Grid>
           <Grid item xs={6}>
@@ -268,6 +356,7 @@ export default function Users() {
                 type="date"
                 fullWidth
                 defaultValue={isEdit ? convertDate(dialogContent.birthday) : ''}
+                onChange={(e) => setdialogContent({ ...dialogContent, birthday: e.target.value })}
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -279,6 +368,7 @@ export default function Users() {
           margin="dense"
           id="address"
           label="Full Address"
+          onChange={(e) => setdialogContent({ ...dialogContent, address: e.target.value })}
           defaultValue={isEdit ? dialogContent.address : ''}
           fullWidth
         />
@@ -290,6 +380,7 @@ export default function Users() {
               label="Email Address"
               type="email"
               defaultValue={isEdit ? dialogContent.email : ''}
+              onChange={(e) => setdialogContent({ ...dialogContent, email: e.target.value })}
               fullWidth
             /></Box>
           <Box marginLeft={1}>
@@ -299,6 +390,7 @@ export default function Users() {
               inputClass={classes.field}
               regions={'europe'}
               component={TextField}
+              onChange={(e) => setdialogContent({ ...dialogContent, phone: e })}
               dropdownClass={classes.countryList}
               inputExtraProps={{
                 margin: 'normal',
@@ -329,7 +421,7 @@ export default function Users() {
                 native
                 variant='standard'
                 onChange={(e) => setdialogContent({ ...dialogContent, role: e.target.value })}
-                defaultValue={dialogContent.role}
+                defaultValue={isEdit ? dialogContent.role : ""}
                 inputProps={{
                   name: 'key',
                   id: 'standard-key-native-simple',
@@ -358,7 +450,7 @@ export default function Users() {
               id="passconf"
               label="Password Confirmation"
               type="password"
-              onChange={(e) => setdialogContent({ ...dialogContent, password: e.target.value })}
+              onChange={(e) => setdialogContent({ ...dialogContent, passwordConfirm: e.target.value })}
               defaultValue={isEdit ? dialogContent.password : ''}
             />
           </Box>
@@ -368,8 +460,8 @@ export default function Users() {
         <Button onClick={handleDialogClose} size="large" color="primary">
           Cancel
         </Button>
-        <Button onClick={isEdit ? handleDialogSendEditUser : handleDialogSendNewUser} size="large" className={dialogContent && dialogContent.name ? classes.modalButtonEdit : classes.modalButtonRegister}>
-          {dialogContent && dialogContent.name ? 'Save Edit' : 'Register'}
+        <Button onClick={isEdit ? handleDialogSendEditUser : handleDialogSendNewUser} size="large" className={isEdit ? classes.modalButtonEdit : classes.modalButtonRegister}>
+          {isEdit ? 'Save Edit' : 'Register'}
         </Button>
       </DialogActions>
     </Dialog>
