@@ -16,6 +16,7 @@ import {
 import AddIcon from "@material-ui/icons/Add";
 import MinusIcon from "@material-ui/icons/Remove";
 import _ from "lodash";
+import { observer } from "mobx-react";
 
 const useStyles = makeStyles({
   input: {
@@ -36,7 +37,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function Dialog({
+function Dialog({
   initialCategory,
   dialog = false,
   setDialog = () => {},
@@ -54,20 +55,24 @@ export default function Dialog({
     ],
   };
   const classes = useStyles();
-  const [category, setCategory] = useState(defaultCategory);
+  const [category, setCategory] = useState({});
+  const [type, setType] = useState("");
 
   // Setup Category on Edit or Create Mode
   useEffect(() => {
-    if (!_.isEmpty(initialCategory)) {
+    if (dialog && !_.isEmpty(initialCategory)) {
       setCategory(initialCategory);
-    } else {
+      setType("EDIT");
+    } else if (dialog) {
       setCategory(defaultCategory);
+      setType("CREATE");
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCategory]);
+  }, [dialog, initialCategory]);
 
   const handleSubmit = () => {
-    onSubmit(category);
+    onSubmit(type, category);
     setDialog(false);
     setCategory(defaultCategory);
   };
@@ -79,7 +84,7 @@ export default function Dialog({
       aria-labelledby="category-dialog"
     >
       <DialogTitle id="category-dialog">
-        {_.isEmpty(category.id) ? "Criar" : "Editar"} Categoria
+        {type === "CREATE" ? "Criar" : "Editar"} Categoria
       </DialogTitle>
       <DialogContent>
         <FormControl className={classes.input}>
@@ -131,46 +136,47 @@ export default function Dialog({
             <MenuItem value="WET">Molhado</MenuItem>
           </Select>
         </FormControl>
-        {category.attributes.map(({ key, value }, index) => (
-          <FormControl className={classes.inputGroup} key={index}>
-            <TextField
-              id="key"
-              label="Atributo"
-              placeholder="Volume"
-              variant="outlined"
-              value={key}
-              onChange={({ target }) => {
-                const { attributes } = category;
-                attributes[index] = {
-                  ...attributes[index],
-                  key: target.value,
-                };
-                setCategory((state) => ({
-                  ...state,
-                  attributes: [...attributes],
-                }));
-              }}
-            />
-            <TextField
-              id="value"
-              label="Unidade"
-              placeholder="Un."
-              variant="outlined"
-              value={value}
-              onChange={({ target }) => {
-                const { attributes } = category;
-                attributes[index] = {
-                  ...attributes[index],
-                  value: target.value,
-                };
-                setCategory((state) => ({
-                  ...state,
-                  attributes: [...attributes],
-                }));
-              }}
-            />
-          </FormControl>
-        ))}
+        {_.isArray(category.attributes) &&
+          category.attributes.map(({ key, value }, index) => (
+            <FormControl className={classes.inputGroup} key={index}>
+              <TextField
+                id="key"
+                label="Atributo"
+                placeholder="Volume"
+                variant="outlined"
+                value={key}
+                onChange={({ target }) => {
+                  const { attributes } = category;
+                  attributes[index] = {
+                    ...attributes[index],
+                    key: target.value,
+                  };
+                  setCategory((state) => ({
+                    ...state,
+                    attributes: [...attributes],
+                  }));
+                }}
+              />
+              <TextField
+                id="value"
+                label="Unidade"
+                placeholder="Un."
+                variant="outlined"
+                value={value}
+                onChange={({ target }) => {
+                  const { attributes } = category;
+                  attributes[index] = {
+                    ...attributes[index],
+                    value: target.value,
+                  };
+                  setCategory((state) => ({
+                    ...state,
+                    attributes: [...attributes],
+                  }));
+                }}
+              />
+            </FormControl>
+          ))}
         <div className={classes.button}>
           <IconButton
             onClick={() => {
@@ -204,9 +210,11 @@ export default function Dialog({
           Cancelar
         </Button>
         <Button size="large" onClick={handleSubmit} color="primary">
-          Criar
+          {type === "CREATE" ? "Criar" : "Editar"}
         </Button>
       </DialogActions>
     </MaterialDialog>
   );
 }
+
+export default observer(Dialog);

@@ -1,10 +1,11 @@
-import { observable, action } from "mobx";
+import { observable, action, runInAction } from "mobx";
 import Statistic from "../models/Statistic";
 import { Post } from "../models/Post";
 import { v4 as uuid } from "uuid";
 import Category from "../models/Category";
 import Product from "../models/Product";
 import Stock from "../models/Stock";
+import api from "../services/api";
 
 const appStore = observable({
   statistics: [],
@@ -70,40 +71,38 @@ appStore.fetchStocks = action((filter) => {
     new Stock(
       uuid(),
       "Doce Campos",
-      "WET",                          // New -> Product/Wine
+      "WET", // New -> Product/Wine
       100,
       "Un.",
       "A2 Leste",
       new Date().toLocaleString(),
-      "Nuno Silva",                   // New -> Emplooye
+      "Nuno Silva" // New -> Emplooye
     ),
     new Stock(
       uuid(),
       "Gallard Premium",
-      "WET",                          // New -> Product/Wine
+      "WET", // New -> Product/Wine
       250,
       "Un.",
       "A5 Leste",
       new Date().toLocaleString(),
-      "Marcos Conti",                   // New -> Emplooye
+      "Marcos Conti" // New -> Emplooye
     ),
     new Stock(
       uuid(),
       "Uva Crimson",
-      "RAW",                          // New -> Product/Wine
+      "RAW", // New -> Product/Wine
       88,
       "KG",
       "B4 Oeste",
       new Date().toLocaleString(),
-      "Maria Joana",                   // New -> Emplooye
-    )
+      "Maria Joana" // New -> Emplooye
+    ),
   ].filter((stock) => stock.type === filter);
 });
 
 appStore.setSelectedStock = action((id) => {
-  appStore.selectedStock = appStore.stocks.find(
-    (stock) => stock.id === id
-  );
+  appStore.selectedStock = appStore.stocks.find((stock) => stock.id === id);
 });
 
 appStore.clearSelectedStock = action(() => {
@@ -127,7 +126,7 @@ appStore.editStock = action(
         unity,
         warehouse,
         entryDate,
-        employee,
+        employee
       );
     }
   }
@@ -136,7 +135,16 @@ appStore.editStock = action(
 appStore.createStock = action(
   ({ title, type, quantity, unity, warehouse, entryDate, employee }) => {
     appStore.stocks.push(
-      new Stock(uuid(), title, type, quantity, unity, warehouse, entryDate, employee)
+      new Stock(
+        uuid(),
+        title,
+        type,
+        quantity,
+        unity,
+        warehouse,
+        entryDate,
+        employee
+      )
     );
   }
 );
@@ -233,50 +241,131 @@ appStore.clearSelectedProduct = action(() => {
 // Categories
 //
 appStore.fetchCategories = action(() => {
-  appStore.categories = [
-    new Category(
-      "0101",
-      "Garrafa",
-      "RAW",
-      "Garrafa de vidro para armazenamento do vinho",
-      [
-        { key: "Volume", value: "ml" },
-        { key: "Diametro", value: "cm" },
-      ]
-    ),
-    new Category(uuid(), "Rolha", "RAW", "", [
-      { key: "Diametro", value: "cm" },
-    ]),
-  ];
+  const body = {
+    query: `{
+      categories {
+        id
+        desc
+        characteristics
+      }
+    }`,
+  };
+
+  api
+    .post("/", body)
+    .then(({ data }) => {
+      const { categories } = data;
+      runInAction(() => {
+        appStore.categories = categories.map(
+          ({ id, desc, characteristics }) =>
+            new Category(id, desc, "RAW", characteristics, [])
+        );
+      });
+    })
+    .catch((err) => console.log(err));
 });
 
 appStore.deleteCategory = action((id) => {
-  appStore.categories = appStore.categories.filter(
-    (category) => category.id !== id
+  const { title, description } = appStore.categories.find(
+    (category) => category.id === id
   );
+
+  const body = {
+    query: `
+      mutation ($category: InputCategoryType) {
+        deleteCategory(category: $category) {
+          id
+          desc
+        }
+      }
+    `,
+    variables: `
+      {
+        "category": ${JSON.stringify({
+          id,
+          desc: title,
+          characteristics: description,
+        })}
+      }
+    `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`deleteCategory response with status ${status}`);
+        appStore.fetchCategories();
+      });
+    })
+    .catch((err) => console.log(err));
 });
 
 appStore.createCategory = action(({ title, type, description, attributes }) => {
-  appStore.categories.push(
-    new Category(uuid(), title, type, description, attributes)
-  );
+  const body = {
+    query: `
+        mutation ($category: InputCategoryType) {
+          addCategory(category: $category) {
+            id
+            desc
+            characteristics
+          }
+        }
+      `,
+    variables: `
+        {
+          "category": ${JSON.stringify({
+            id: 0,
+            desc: title,
+            characteristics: description,
+          })}
+        }
+      `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`createCategory response with status ${status}`);
+        appStore.fetchCategories();
+      });
+    })
+    .catch((err) => console.log(err));
 });
 
 appStore.editCategory = action(
   ({ id, title, type, description, attributes }) => {
-    const index = appStore.categories.findIndex(
-      (category) => category.id === id
-    );
+    const body = {
+      query: `
+        mutation ($category: InputCategoryType) {
+          updateCategory(category: $category) {
+            id
+            desc
+          }
+        }
 
-    if (index > -1) {
-      appStore.categories[index] = new Category(
-        id,
-        title,
-        type,
-        description,
-        attributes
-      );
-    }
+      `,
+      variables: `
+        {
+          "category": ${JSON.stringify({
+            id: id,
+            desc: title,
+            characteristics: description,
+          })}
+        }
+      `,
+    };
+
+    api
+      .post("/", body)
+      .then(({ status }) => {
+        runInAction(() => {
+          console.log(`editCategory response with status ${status}`);
+          appStore.fetchCategories();
+        });
+      })
+      .catch((err) => console.log(err));
   }
 );
 

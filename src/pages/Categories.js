@@ -5,7 +5,6 @@ import {
   HeaderTitle,
 } from "../components/Layouts/styles";
 
-import _ from "lodash";
 import { IconButton } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 import useStores from "../stores/useStores";
@@ -29,8 +28,8 @@ function Categories() {
     }
   }, [dialog, appStore]);
 
-  const onSubmit = (category) => {
-    if (_.isEmpty(category.id)) {
+  const onSubmit = (type, category) => {
+    if (type === "CREATE") {
       appStore.createCategory(category);
     } else {
       appStore.editCategory(category);

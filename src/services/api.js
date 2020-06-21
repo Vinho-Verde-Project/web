@@ -6,7 +6,7 @@ const agent = new https.Agent({
   });
 
 const api = axios.create({
-    baseURL: 'https://192.168.1.7:53222/graphql',
+    baseURL: 'http://localhost:80/graphql',
     responseType: 'json',
     httpsAgent: agent
 })
