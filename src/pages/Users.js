@@ -145,7 +145,7 @@ export default function Users() {
 
   const [onceRolesLoad,setOnceRolesLoad] = useState(true);
 
-  function loadRoles() {
+  /*function loadRoles() {
     api.post('/', {
       "query": `{roles { id desc }}`
     }).then(function (response) {
@@ -160,7 +160,7 @@ export default function Users() {
     }).catch(function (error) {
       console.log("Erro: ",error);
     });
-  }
+  }*/
 
   function handleDialogSendEditUser() {
     console.log("EDIT")
@@ -183,7 +183,7 @@ export default function Users() {
       return alert("Erro: Nenhum nome foi inserido!");
     }*/
 
-    console.log(`{"employee":{
+    /*console.log(`{"employee":{
       "id":0,
       "username":${dialogContent.username},
       "firstName":${dialogContent.firstName},
@@ -196,7 +196,7 @@ export default function Users() {
       "hashedPassword":${dialogContent.password},
       "createdAt":"12/25/2015",
       "roleId":${dialogContent.role}
-    }}`);
+    }}`);*/
 
     api.post('/', {
       "query": "mutation($employee: InputEmployeeType) {addEmployee(employee:$employee){ id username }}",
@@ -212,7 +212,7 @@ export default function Users() {
       "email":"${dialogContent.email}",
       "hashedPassword":"${dialogContent.password}",
       "createdAt":"12/25/2015",
-      "roleId":${dialogContent.role}
+      "roleId":${dialogContent.roleId}
     }}`
     }).then(function (response2) {
       console.log("Criado-User: ",response2);
@@ -259,17 +259,23 @@ export default function Users() {
         hashedPassword      
         roleId
       }
+      roles { id desc permissionId }
     }`
     }).then(function (response) {
+      // Get Roles
+      let newRowRoles = [];
+      response.data.roles.map((role) => {
+        newRowRoles.push({id: role.id, name: role.desc});
+      });
+      setRoleList(newRowRoles);
+
       //{id: 0, name: 'Ros Main', role: 'Assistant', username: 'paiaco', phone: '351912030399', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
-      let newRow = [];
-      
+      let newRowUsers = [];
       response.data.employees.map((row) => {
         //let rowName = roleList.reduce(roleItem => role.roleId === roleItem.id);
-        newRow.push({id: row.id, name: row.firstName + " " + row.lastName, firstName: row.firstName, lastName: row.lastName, nif: row.nif, role: row.roleId, username: row.username, phone: row.phone, email: row.email, birthday: row.birthdate, address: row.adress, password: row.hashedPassword , actions: ''});
+        newRowUsers.push({id: row.id, name: row.firstName + " " + row.lastName, firstName: row.firstName, lastName: row.lastName, nif: row.nif, role: newRowRoles.filter(rl => rl.id === row.roleId)[0].name, roleId: row.roleId, username: row.username, phone: row.phone, email: row.email, birthday: row.birthdate, address: row.adress, password: row.hashedPassword , actions: ''});
       });
-
-      setRows(newRow);
+      setRows(newRowUsers);
       
     }).catch(function (error) {
       console.log("Erro: ",error);
@@ -277,13 +283,13 @@ export default function Users() {
   }
 
   useEffect(() => {
-    if (onceRolesLoad) {
-      setOnceRolesLoad(false);
-      loadRoles();
+    //if (onceRolesLoad) {
+      //setOnceRolesLoad(false);
+      //loadRoles();
+      //updateTable();
+    //} else {
       updateTable();
-    } else {
-      updateTable();
-    }
+    //}
   }, [updateRequest]);
 
   return (
@@ -420,8 +426,8 @@ export default function Users() {
                 fullWidth
                 native
                 variant='standard'
-                onChange={(e) => setdialogContent({ ...dialogContent, role: e.target.value })}
-                defaultValue={isEdit ? dialogContent.role : ""}
+                onChange={(e) => setdialogContent({ ...dialogContent, roleId: e.target.value })}
+                defaultValue={isEdit ? dialogContent.roleId : ""}
                 inputProps={{
                   name: 'key',
                   id: 'standard-key-native-simple',
