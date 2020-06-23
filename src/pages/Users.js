@@ -106,8 +106,20 @@ export default function Users() {
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [removeDialogContent, setRemoveDialogContent] = useState( {
-    id: null,
-    name: '',
+    id: null, 
+    name: null,
+    firstName: null,
+    lastName: null, 
+    nif: null, 
+    role: null ,
+    username: null, 
+    phone: null, 
+    email: null, 
+    birthday: null, 
+    address: null, 
+    hashedPassword: null,
+    createdAt: null,
+    roleId: null
   });
 
   const handleDialogOpen = () => {
@@ -131,16 +143,35 @@ export default function Users() {
   }
 
   function handleRemoveUser(data) {
-    setRemoveDialogContent({ id: data.id, name: data.name });
+    setRemoveDialogContent(data);
     setRemoveDialogOpen(true);
   }
 
   function handleRemoveDialog() {
-    setRemoveDialogOpen(false);
-    const data = {
-      id: removeDialogContent.id
-    };
-    console.log("Envia um chamada DELETE com:",data);
+
+    api.post('/', {
+      "query": "mutation($employee: InputEmployeeType) {deleteEmployee(employee:$employee){ id username }}",
+      "variables": `{"employee":{
+      "id":${removeDialogContent.id},
+      "username":"${removeDialogContent.username}",
+      "firstName":"${removeDialogContent.firstName}",
+      "lastName":"${removeDialogContent.lastName}",
+      "nif":"${removeDialogContent.nif}",
+      "birthdate":"${removeDialogContent.birthday}",
+      "adress":"${removeDialogContent.address}",
+      "phone":"${removeDialogContent.phone}",
+      "email":"${removeDialogContent.email}",
+      "hashedPassword":"${removeDialogContent.hashedPassword}",
+      "createdAt":"12/25/2015",
+      "roleId":${removeDialogContent.roleId}
+    }}`
+    }).then(function (response3) {
+      alert("User Removed!");
+      setUpdateRequest(!updateRequest);
+      setRemoveDialogOpen(false);
+    }).catch(function (error3) {
+      alert("Error when trying to remove the User!");
+    });
   }
 
   const [onceRolesLoad,setOnceRolesLoad] = useState(true);
@@ -163,8 +194,29 @@ export default function Users() {
   }*/
 
   function handleDialogSendEditUser() {
-    console.log("EDIT")
-    console.log(dialogContent);
+    api.post('/', {
+      "query": "mutation($employee: InputEmployeeType) {updateEmployee(employee:$employee){ id username }}",
+      "variables": `{"employee":{
+      "id":${dialogContent.id},
+      "username":"${dialogContent.username}",
+      "firstName":"${dialogContent.firstName}",
+      "lastName":"${dialogContent.lastName}",
+      "nif":"${dialogContent.nif}",
+      "birthdate":"${dialogContent.birthday}",
+      "adress":"${dialogContent.address}",
+      "phone":"${dialogContent.phone}",
+      "email":"${dialogContent.email}",
+      "hashedPassword":"${dialogContent.password}",
+      "createdAt":"12/25/2015",
+      "roleId":${dialogContent.roleId}
+    }}`
+    }).then(function (response3) {
+      alert("User Modify Success!");
+      handleDialogClose();
+      setUpdateRequest(!updateRequest);
+    }).catch(function (error3) {
+      alert("Error when trying to modify the User!");
+    });
   }
 
   function handleDialogSendNewUser() {
@@ -178,25 +230,6 @@ export default function Users() {
     if (dialogContent.password !== dialogContent.passwordConfirm) {
       return alert("The passwords does not match!");
     }
-
-    /*if (dialogContent.name == null || dialogContent.name === "") {
-      return alert("Erro: Nenhum nome foi inserido!");
-    }*/
-
-    /*console.log(`{"employee":{
-      "id":0,
-      "username":${dialogContent.username},
-      "firstName":${dialogContent.firstName},
-      "lastName":${dialogContent.lastName},
-      "nif":${dialogContent.nif},
-      "birthdate":${dialogContent.birthday},
-      "adress":${dialogContent.address},
-      "phone":${dialogContent.phone},
-      "email":${dialogContent.email},
-      "hashedPassword":${dialogContent.password},
-      "createdAt":"12/25/2015",
-      "roleId":${dialogContent.role}
-    }}`);*/
 
     api.post('/', {
       "query": "mutation($employee: InputEmployeeType) {addEmployee(employee:$employee){ id username }}",
