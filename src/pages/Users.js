@@ -114,21 +114,21 @@ export default function Users() {
   });
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
-  const [removeDialogContent, setRemoveDialogContent] = useState( {
-    id: null, 
+  const [removeDialogContent, setRemoveDialogContent] = useState({
+    id: null,
     name: null,
     firstName: null,
-    lastName: null, 
-    nif: null, 
-    role: null ,
-    username: null, 
-    phone: null, 
-    email: null, 
-    birthday: null, 
-    address: null, 
+    lastName: null,
+    nif: null,
+    role: null,
+    username: null,
+    phone: null,
+    email: null,
+    birthday: null,
+    address: null,
     hashedPassword: null,
     createdAt: null,
-    roleId: null
+    roleId: null,
   });
 
   const handleDialogOpen = () => {
@@ -160,17 +160,11 @@ export default function Users() {
   }
 
   function handleRemoveDialog() {
-<<<<<<< HEAD
-    setRemoveDialogOpen(false);
-    const data = {
-      id: removeDialogContent.id,
-    };
-    console.log("Envia um chamada DELETE com:", data);
-=======
-
-    api.post('/', {
-      "query": "mutation($employee: InputEmployeeType) {deleteEmployee(employee:$employee){ id username }}",
-      "variables": `{"employee":{
+    api
+      .post("/", {
+        query:
+          "mutation($employee: InputEmployeeType) {deleteEmployee(employee:$employee){ id username }}",
+        variables: `{"employee":{
       "id":${removeDialogContent.id},
       "username":"${removeDialogContent.username}",
       "firstName":"${removeDialogContent.firstName}",
@@ -183,49 +177,30 @@ export default function Users() {
       "hashedPassword":"${removeDialogContent.hashedPassword}",
       "createdAt":"12/25/2015",
       "roleId":${removeDialogContent.roleId}
-    }}`
-    }).then(function (response3) {
-      alert("User Removed!");
-      setUpdateRequest(!updateRequest);
-      setRemoveDialogOpen(false);
-    }).catch(function (error3) {
-      alert("Error when trying to remove the User!");
-    });
->>>>>>> f28318d8ae23243ebc15314abbe4161ffbf9989c
+    }}`,
+      })
+      .then(function (response3) {
+        alert("User Removed!");
+        setUpdateRequest(!updateRequest);
+        setRemoveDialogOpen(false);
+      })
+      .catch(function (error3) {
+        alert("Error when trying to remove the User!");
+      });
   }
 
   const [onceRolesLoad, setOnceRolesLoad] = useState(true);
 
-<<<<<<< HEAD
-  function loadRoles() {
-    api
-      .post("/", {
-        query: `{roles { id desc }}`,
-      })
-      .then(function (response) {
-        let newRow = [];
-        response.data.roles.forEach((role) => {
-          newRow.push({ id: role.id, name: role.desc });
-        });
-=======
   /*function loadRoles() {
     api.post('/', {
       "query": `{roles { id desc }}`
     }).then(function (response) {
->>>>>>> f28318d8ae23243ebc15314abbe4161ffbf9989c
 
         setRoleList(newRow);
       })
       .catch(function (error) {
         console.log("Erro: ", error);
       });
-<<<<<<< HEAD
-  }
-
-  function handleDialogSendEditUser() {
-    console.log("EDIT");
-    console.log(dialogContent);
-=======
 
       setRoleList(newRow);
       
@@ -235,9 +210,11 @@ export default function Users() {
   }*/
 
   function handleDialogSendEditUser() {
-    api.post('/', {
-      "query": "mutation($employee: InputEmployeeType) {updateEmployee(employee:$employee){ id username }}",
-      "variables": `{"employee":{
+    api
+      .post("/", {
+        query:
+          "mutation($employee: InputEmployeeType) {updateEmployee(employee:$employee){ id username }}",
+        variables: `{"employee":{
       "id":${dialogContent.id},
       "username":"${dialogContent.username}",
       "firstName":"${dialogContent.firstName}",
@@ -250,15 +227,16 @@ export default function Users() {
       "hashedPassword":"${dialogContent.password}",
       "createdAt":"12/25/2015",
       "roleId":${dialogContent.roleId}
-    }}`
-    }).then(function (response3) {
-      alert("User Modify Success!");
-      handleDialogClose();
-      setUpdateRequest(!updateRequest);
-    }).catch(function (error3) {
-      alert("Error when trying to modify the User!");
-    });
->>>>>>> f28318d8ae23243ebc15314abbe4161ffbf9989c
+    }}`,
+      })
+      .then(function (response3) {
+        alert("User Modify Success!");
+        handleDialogClose();
+        setUpdateRequest(!updateRequest);
+      })
+      .catch(function (error3) {
+        alert("Error when trying to modify the User!");
+      });
   }
 
   function handleDialogSendNewUser() {
@@ -273,36 +251,11 @@ export default function Users() {
       return alert("The passwords does not match!");
     }
 
-<<<<<<< HEAD
-    /*if (dialogContent.name == null || dialogContent.name === "") {
-      return alert("Erro: Nenhum nome foi inserido!");
-    }*/
-
-    console.log(`{"employee":{
-      "id":0,
-      "username":${dialogContent.username},
-      "firstName":${dialogContent.firstName},
-      "lastName":${dialogContent.lastName},
-      "nif":${dialogContent.nif},
-      "birthdate":${dialogContent.birthday},
-      "adress":${dialogContent.address},
-      "phone":${dialogContent.phone},
-      "email":${dialogContent.email},
-      "hashedPassword":${dialogContent.password},
-      "createdAt":"12/25/2015",
-      "roleId":${dialogContent.role}
-    }}`);
-
     api
       .post("/", {
         query:
           "mutation($employee: InputEmployeeType) {addEmployee(employee:$employee){ id username }}",
         variables: `{"employee":{
-=======
-    api.post('/', {
-      "query": "mutation($employee: InputEmployeeType) {addEmployee(employee:$employee){ id username }}",
-      "variables": `{"employee":{
->>>>>>> f28318d8ae23243ebc15314abbe4161ffbf9989c
       "id":0,
       "username":"${dialogContent.username}",
       "firstName":"${dialogContent.firstName}",
@@ -380,22 +333,29 @@ export default function Users() {
         hashedPassword      
         roleId
       }
-<<<<<<< HEAD
+      roles { id desc permissionId }
     }`,
       })
       .then(function (response) {
-        //{id: 0, name: 'Ros Main', role: 'Assistant', username: 'paiaco', phone: '351912030399', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
-        let newRow = [];
+        // Get Roles
+        let newRowRoles = [];
+        response.data.roles.map((role) => {
+          newRowRoles.push({ id: role.id, name: role.desc });
+        });
+        setRoleList(newRowRoles);
 
-        response.data.employees.forEach((row) => {
+        //{id: 0, name: 'Ros Main', role: 'Assistant', username: 'paiaco', phone: '351912030399', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
+        let newRowUsers = [];
+        response.data.employees.map((row) => {
           //let rowName = roleList.reduce(roleItem => role.roleId === roleItem.id);
-          newRow.push({
+          newRowUsers.push({
             id: row.id,
             name: row.firstName + " " + row.lastName,
             firstName: row.firstName,
             lastName: row.lastName,
             nif: row.nif,
-            role: row.roleId,
+            role: newRowRoles.filter((rl) => rl.id === row.roleId)[0].name,
+            roleId: row.roleId,
             username: row.username,
             phone: row.phone,
             email: row.email,
@@ -405,50 +365,21 @@ export default function Users() {
             actions: "",
           });
         });
-
-        setRows(newRow);
+        setRows(newRowUsers);
       })
       .catch(function (error) {
         console.log("Erro: ", error);
       });
-=======
-      roles { id desc permissionId }
-    }`
-    }).then(function (response) {
-      // Get Roles
-      let newRowRoles = [];
-      response.data.roles.map((role) => {
-        newRowRoles.push({id: role.id, name: role.desc});
-      });
-      setRoleList(newRowRoles);
-
-      //{id: 0, name: 'Ros Main', role: 'Assistant', username: 'paiaco', phone: '351912030399', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
-      let newRowUsers = [];
-      response.data.employees.map((row) => {
-        //let rowName = roleList.reduce(roleItem => role.roleId === roleItem.id);
-        newRowUsers.push({id: row.id, name: row.firstName + " " + row.lastName, firstName: row.firstName, lastName: row.lastName, nif: row.nif, role: newRowRoles.filter(rl => rl.id === row.roleId)[0].name, roleId: row.roleId, username: row.username, phone: row.phone, email: row.email, birthday: row.birthdate, address: row.adress, password: row.hashedPassword , actions: ''});
-      });
-      setRows(newRowUsers);
-      
-    }).catch(function (error) {
-      console.log("Erro: ",error);
-    });
->>>>>>> f28318d8ae23243ebc15314abbe4161ffbf9989c
   }
 
   useEffect(() => {
     //if (onceRolesLoad) {
-      //setOnceRolesLoad(false);
-      //loadRoles();
-      //updateTable();
+    //setOnceRolesLoad(false);
+    //loadRoles();
+    //updateTable();
     //} else {
-      updateTable();
-<<<<<<< HEAD
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-=======
+    updateTable();
     //}
->>>>>>> f28318d8ae23243ebc15314abbe4161ffbf9989c
   }, [updateRequest]);
 
   return (
@@ -661,60 +592,41 @@ export default function Users() {
             <Box mr={1}>
               <TextField
                 margin="dense"
-<<<<<<< HEAD
-                id="pass"
-                label="Password"
-                type="password"
-                onChange={(e) =>
-                  setdialogContent({
-                    ...dialogContent,
-                    password: e.target.value,
-                  })
-                }
-                defaultValue={isEdit ? dialogContent.password : ""}
-              />
-            </Box>
-            <Box ml={1}>
-              <TextField
-                margin="dense"
-                id="passconf"
-                label="Password Confirmation"
-                type="password"
-                onChange={(e) =>
-                  setdialogContent({
-                    ...dialogContent,
-                    passwordConfirm: e.target.value,
-                  })
-                }
-                defaultValue={isEdit ? dialogContent.password : ""}
-              />
-=======
                 id="username"
                 label="UserName"
                 fullWidth
-                onChange={(e) => setdialogContent({ ...dialogContent, username: e.target.value })}
-                defaultValue={isEdit ? dialogContent.username : ''}
-              /></Box>
+                onChange={(e) =>
+                  setdialogContent({
+                    ...dialogContent,
+                    username: e.target.value,
+                  })
+                }
+                defaultValue={isEdit ? dialogContent.username : ""}
+              />
+            </Box>
           </Grid>
           <Grid item xs={6}>
-            <Box ml={1} xs={6} >
+            <Box ml={1} xs={6}>
               <InputLabel htmlFor="standard-key-native-simple">Role</InputLabel>
               <Select
                 fullWidth
                 native
-                variant='standard'
-                onChange={(e) => setdialogContent({ ...dialogContent, roleId: e.target.value })}
+                variant="standard"
+                onChange={(e) =>
+                  setdialogContent({ ...dialogContent, roleId: e.target.value })
+                }
                 defaultValue={isEdit ? dialogContent.roleId : ""}
                 inputProps={{
-                  name: 'key',
-                  id: 'standard-key-native-simple',
+                  name: "key",
+                  id: "standard-key-native-simple",
                 }}
               >
-                {roleList.map(role => (
-                  <option key={role.id} value={role.id}>{role.name}</option>)
-                )}
+                {roleList.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.name}
+                  </option>
+                ))}
               </Select>
->>>>>>> f28318d8ae23243ebc15314abbe4161ffbf9989c
             </Box>
           </Grid>
         </DialogContent>
