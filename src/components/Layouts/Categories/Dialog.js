@@ -6,15 +6,9 @@ import {
   DialogContent,
   FormControl,
   TextField,
-  InputLabel,
-  Select,
-  MenuItem,
-  IconButton,
   DialogActions,
   Button,
 } from "@material-ui/core";
-import AddIcon from "@material-ui/icons/Add";
-import MinusIcon from "@material-ui/icons/Remove";
 import _ from "lodash";
 import { observer } from "mobx-react";
 
@@ -22,13 +16,13 @@ const useStyles = makeStyles({
   input: {
     display: "flex",
     flex: 1,
-    margin: "14px",
+    margin: 14,
   },
   inputGroup: {
     display: "flex",
     flex: 1,
     flexDirection: "row",
-    margin: "14px",
+    margin: 14,
   },
   button: {
     display: "flex",
@@ -55,7 +49,7 @@ function Dialog({
     ],
   };
   const classes = useStyles();
-  const [category, setCategory] = useState({});
+  const [category, setCategory] = useState(defaultCategory);
   const [type, setType] = useState("");
 
   // Setup Category on Edit or Create Mode
@@ -118,92 +112,6 @@ function Dialog({
             }
           />
         </FormControl>
-        <FormControl className={classes.input}>
-          <InputLabel id="type-label">Tipo</InputLabel>
-          <Select
-            id="type"
-            labelId="type-label"
-            value={category.type}
-            variant="outlined"
-            onChange={({ target }) =>
-              setCategory((state) => ({
-                ...state,
-                type: target.value,
-              }))
-            }
-          >
-            <MenuItem value="RAW">Seco</MenuItem>
-            <MenuItem value="WET">Molhado</MenuItem>
-          </Select>
-        </FormControl>
-        {_.isArray(category.attributes) &&
-          category.attributes.map(({ key, value }, index) => (
-            <FormControl className={classes.inputGroup} key={index}>
-              <TextField
-                id="key"
-                label="Atributo"
-                placeholder="Volume"
-                variant="outlined"
-                value={key}
-                onChange={({ target }) => {
-                  const { attributes } = category;
-                  attributes[index] = {
-                    ...attributes[index],
-                    key: target.value,
-                  };
-                  setCategory((state) => ({
-                    ...state,
-                    attributes: [...attributes],
-                  }));
-                }}
-              />
-              <TextField
-                id="value"
-                label="Unidade"
-                placeholder="Un."
-                variant="outlined"
-                value={value}
-                onChange={({ target }) => {
-                  const { attributes } = category;
-                  attributes[index] = {
-                    ...attributes[index],
-                    value: target.value,
-                  };
-                  setCategory((state) => ({
-                    ...state,
-                    attributes: [...attributes],
-                  }));
-                }}
-              />
-            </FormControl>
-          ))}
-        <div className={classes.button}>
-          <IconButton
-            onClick={() => {
-              const { attributes } = category;
-              attributes.pop();
-
-              setCategory((state) => ({
-                ...state,
-                attributes: [...attributes],
-              }));
-            }}
-          >
-            <MinusIcon />
-          </IconButton>
-          <IconButton
-            onClick={() => {
-              const { attributes } = category;
-              attributes.push({ key: "", value: "" });
-              setCategory((state) => ({
-                ...state,
-                attributes: [...attributes],
-              }));
-            }}
-          >
-            <AddIcon />
-          </IconButton>
-        </div>
       </DialogContent>
       <DialogActions>
         <Button size="large" onClick={() => setDialog(false)}>

@@ -18,13 +18,13 @@ const useStyles = makeStyles({
   input: {
     display: "flex",
     flex: 1,
-    margin: "14px",
+    margin: 14,
   },
   inputGroup: {
     display: "flex",
     flex: 1,
     flexDirection: "row",
-    margin: "14px",
+    margin: 14,
   },
   button: {
     display: "flex",
@@ -45,41 +45,38 @@ export default function Dialog({
     category: {
       id: "",
     },
-    quantity: "",
-    unity: "",
-    attributes: [],
+    type: "RAW",
   };
   const classes = useStyles();
   const [product, setProduct] = useState(defaultProduct);
+  const [type, setType] = useState("");
 
-  // Setup Category on Edit or Create Mode
+  // Setup Products on Edit or Create Mode
   useEffect(() => {
-    if (!_.isEmpty(initialProduct)) {
+    if (dialog && !_.isEmpty(initialProduct)) {
       setProduct(initialProduct);
-    } else {
+      setType("EDIT");
+    } else if (dialog) {
       setProduct(defaultProduct);
+      setType("CREATE");
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialProduct]);
+  }, [dialog, initialProduct]);
 
   const setCategory = ({ target }) => {
     const category = categories.find(({ id }) => id === target.value);
-    const attributes = category.attributes.map((attribute) => ({
-      attribute,
-      value: "",
-    }));
 
     setProduct((state) => ({
       ...state,
       category: {
         ...category,
       },
-      attributes: [...attributes],
     }));
   };
 
   const handleSubmit = () => {
-    onSubmit(product);
+    onSubmit(type, product);
     setDialog(false);
     setProduct(defaultProduct);
   };
@@ -91,7 +88,7 @@ export default function Dialog({
       aria-labelledby="product-dialog"
     >
       <DialogTitle id="product-dialog">
-        {_.isEmpty(product.id) ? "Criar" : "Editar"} Produto
+        {type === "CREATE" ? "Criar" : "Editar"} Produto
       </DialogTitle>
       <DialogContent>
         <FormControl className={classes.input}>
@@ -126,60 +123,25 @@ export default function Dialog({
             ))}
           </Select>
         </FormControl>
-
-        <FormControl className={classes.inputGroup}>
-          <TextField
-            id="quantity"
-            label="Quantidade"
-            placeholder="0"
+        <FormControl className={classes.input}>
+          <InputLabel id="type-label">Tipo</InputLabel>
+          <Select
+            id="type"
+            labelId="type-label"
+            value={product.type}
             variant="outlined"
-            type="number"
-            value={product.quantity}
-            onChange={({ target }) => {
+            defaultValue="RAW"
+            onChange={({ target }) =>
               setProduct((state) => ({
                 ...state,
-                quantity: target.value,
-              }));
-            }}
-          />
-          <TextField
-            id="unity"
-            label="Unidade"
-            placeholder="Un."
-            variant="outlined"
-            value={product.unity}
-            onChange={({ target }) => {
-              setProduct((state) => ({
-                ...state,
-                unity: target.value,
-              }));
-            }}
-          />
+                type: target.value,
+              }))
+            }
+          >
+            <MenuItem value="RAW">Seco</MenuItem>
+            <MenuItem value="WET">Molhado</MenuItem>
+          </Select>
         </FormControl>
-        {!_.isEmpty(product.attributes) &&
-          product.attributes.map(({ attribute, value }, index) => (
-            <FormControl key={index} className={classes.input}>
-              <TextField
-                id={"attribute" + index}
-                label={attribute.key}
-                placeholder={attribute.value}
-                variant="outlined"
-                value={product.attributes[index].value}
-                onChange={({ target }) => {
-                  const { attributes } = product;
-                  attributes[index] = {
-                    ...attributes[index],
-                    value: target.value,
-                  };
-
-                  setProduct((state) => ({
-                    ...state,
-                    attributes: [...attributes],
-                  }));
-                }}
-              />
-            </FormControl>
-          ))}
       </DialogContent>
       <DialogActions>
         <Button size="large" onClick={() => setDialog(false)}>

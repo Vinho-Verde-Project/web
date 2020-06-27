@@ -201,14 +201,39 @@ appStore.deleteProduct = action((id) => {
   appStore.products = appStore.products.filter((product) => product.id !== id);
 });
 
-appStore.createProduct = action(
-  ({ title, category, quantity, unity, attributes }) => {
-    console.log({ title, category, quantity, unity, attributes });
-    appStore.products.push(
-      new Product(uuid(), title, category, quantity, unity, attributes)
-    );
-  }
-);
+appStore.createProduct = action(({ title, category, type }) => {
+  const body = {
+    query: `
+        mutation ($product: InputProductType) {
+          addProduct(product: $product) {
+            id
+          }
+        }
+      `,
+    variables: `
+        {
+          "product": ${JSON.stringify({
+            id: 0,
+            desc: title,
+            categoryId: category.id,
+            type: type,
+            stepId: 1,
+          })}
+        }
+      `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status, ...response }) => {
+      runInAction(() => {
+        console.log(`createProduct response with status ${status}`);
+        console.log(response);
+        // appStore.fetchCategories();
+      });
+    })
+    .catch((err) => console.log(err));
+});
 
 appStore.editProduct = action(
   ({ id, title, category, quantity, unity, attributes }) => {
@@ -301,7 +326,7 @@ appStore.deleteCategory = action((id) => {
     .catch((err) => console.log(err));
 });
 
-appStore.createCategory = action(({ title, type, description, attributes }) => {
+appStore.createCategory = action(({ title, description }) => {
   const body = {
     query: `
         mutation ($category: InputCategoryType) {
@@ -334,10 +359,9 @@ appStore.createCategory = action(({ title, type, description, attributes }) => {
     .catch((err) => console.log(err));
 });
 
-appStore.editCategory = action(
-  ({ id, title, type, description, attributes }) => {
-    const body = {
-      query: `
+appStore.editCategory = action(({ id, title, description }) => {
+  const body = {
+    query: `
         mutation ($category: InputCategoryType) {
           updateCategory(category: $category) {
             id
@@ -346,7 +370,7 @@ appStore.editCategory = action(
         }
 
       `,
-      variables: `
+    variables: `
         {
           "category": ${JSON.stringify({
             id: id,
@@ -355,19 +379,18 @@ appStore.editCategory = action(
           })}
         }
       `,
-    };
+  };
 
-    api
-      .post("/", body)
-      .then(({ status }) => {
-        runInAction(() => {
-          console.log(`editCategory response with status ${status}`);
-          appStore.fetchCategories();
-        });
-      })
-      .catch((err) => console.log(err));
-  }
-);
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`editCategory response with status ${status}`);
+        appStore.fetchCategories();
+      });
+    })
+    .catch((err) => console.log(err));
+});
 
 appStore.setSelectedCategory = action((id) => {
   appStore.selectedCategory = appStore.categories.find(

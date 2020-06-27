@@ -20,6 +20,7 @@ function Products() {
   useEffect(() => {
     appStore.fetchProducts(tab);
     appStore.fetchCategories();
+    console.log(appStore.categories);
   }, [appStore, tab]);
 
   // Clear Category Selection
@@ -29,8 +30,8 @@ function Products() {
     }
   }, [dialog, appStore]);
 
-  const onSubmit = (product) => {
-    if (_.isEmpty(product.id)) {
+  const onSubmit = (type, product) => {
+    if (type === "CREATE") {
       appStore.createProduct(product);
     } else {
       appStore.editProduct(product);
