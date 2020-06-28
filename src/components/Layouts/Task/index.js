@@ -3,7 +3,7 @@ import { Section, SectionHeader, HeaderTitle, LimitedSectionTwoCol } from "../st
 import useStores from "../../../stores/useStores";
 import { observer } from "mobx-react";
 
-//import Dialog from "../components/Layouts/Wine/Dialog";
+import Dialog from "./Dialog";
 import AddIcon from "@material-ui/icons/Add";
 import {
   IconButton,
@@ -53,24 +53,42 @@ function Task() {
   const { appStore } = useStores();
     const [dialog, setDialog] = useState(false);
 
-    // Fetch Categories
+    // Fetch Tasks
     useEffect(() => {
       appStore.fetchTasks();
     }, [appStore]);
   
-    // Clear Category Selection
+    // Clear Task Selection
     useEffect(() => {
       if (!dialog) {
         appStore.clearSelectedTask();
       }
     }, [dialog, appStore]);
 
+    const onSubmit = (type, task) => {
+      if (type === "CREATE") {
+        appStore.createTask(task);
+      } else {
+        //appStore.editTask(wine);
+      }
+      appStore.clearSelectedTask();
+    };
+
   return (
     <Section>
-      <SectionHeader>
+      <SectionHeader justify="end">
         <HeaderTitle component="h2" variant="h4">
           Tarefas
         </HeaderTitle>
+        <IconButton
+            aria-label="account of current user"
+            aria-haspopup="true"
+            color="primary"
+            onClick={() => setDialog(true)}
+          >
+            <AddIcon />
+          </IconButton>
+        
       </SectionHeader>
       <LimitedSectionTwoCol>
       {appStore.tasks.map(({id, startedAt, endedAt, status}) => (
@@ -107,7 +125,16 @@ function Task() {
       </StyledCard>
       ))}
       </LimitedSectionTwoCol>
+
+    <Dialog
+      initialTask={appStore.selectedTask}
+      dialog={dialog}
+      setDialog={setDialog}
+      onSubmit={onSubmit}
+    />
+
     </Section>
+
   );
 }
 

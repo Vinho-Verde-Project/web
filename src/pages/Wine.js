@@ -36,14 +36,14 @@ function Wines() {
     const { appStore } = useStores();
     const [dialog, setDialog] = useState(false);
 
-    // Fetch Categories
+    // Fetch Wines
     useEffect(() => {
       appStore.fetchWines();
       appStore.fetchCategories();
       appStore.fetchTasks();
     }, [appStore]);
   
-    // Clear Category Selection
+    // Clear Wine Selection
     useEffect(() => {
       if (!dialog) {
         appStore.clearSelectedWine();
@@ -53,14 +53,13 @@ function Wines() {
     const onSubmit = (type, wine) => {
       if (type === "CREATE") {
         appStore.createWine(wine);
-        console.log("Entrou no CREATE");
       } else {
-        //appStore.editCategory(wine);
-        console.log("Entrou no EDIT");
+        //appStore.editWine(wine);
       }
-      appStore.clearSelectedCategory();
+      appStore.clearSelectedWine();
     };
   
+    /*
     const onEdit = (id) => {
       appStore.setSelectedCategory(id);
       setDialog(true);
@@ -69,6 +68,7 @@ function Wines() {
     const onDelete = (id) => {
       appStore.deleteCategory(id);
     };
+    */
   
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [wineDetail, setWineDetail] = useState(null);
@@ -115,12 +115,6 @@ function Wines() {
         const { wine } = data;
         setWineDetail(wine);
         setDetailDialogOpen(true);
-        /*runInAction(() => {
-          appStore.categories = categories.map(
-            ({ id, desc, characteristics }) =>
-              new Category(id, desc, "RAW", characteristics, [])
-          );
-        });*/
       })
       .catch((err) => console.log(err));
   }
