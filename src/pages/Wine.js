@@ -13,7 +13,10 @@ import { Dialog, DialogContent, DialogTitle } from "@material-ui/core";
 import useStores from "../stores/useStores";
 import { observer } from "mobx-react";
 import api from "../services/api";
-import { Data } from "react-data-grid-addons";
+import CustomDialog from "../components/Layouts/Wine/Dialog";
+import { IconButton } from "@material-ui/core";
+import AddIcon from "@material-ui/icons/Add";
+
 
 const styles = makeStyles((theme) => ({
   styles: {
@@ -36,6 +39,8 @@ function Wines() {
     // Fetch Categories
     useEffect(() => {
       appStore.fetchWines();
+      appStore.fetchCategories();
+      appStore.fetchTasks();
     }, [appStore]);
   
     // Clear Category Selection
@@ -45,11 +50,13 @@ function Wines() {
       }
     }, [dialog, appStore]);
   
-    const onSubmit = (type, category) => {
+    const onSubmit = (type, wine) => {
       if (type === "CREATE") {
-        appStore.createCategory(category);
+        appStore.createWine(wine);
+        console.log("Entrou no CREATE");
       } else {
-        appStore.editCategory(category);
+        //appStore.editCategory(wine);
+        console.log("Entrou no EDIT");
       }
       appStore.clearSelectedCategory();
     };
@@ -124,12 +131,17 @@ function Wines() {
     <div className={styles.root}>
       <Grid container justify="center" spacing={3}>
         <Grid container item xs={11} spacing={3}>
-          <Grid item xs={12}>
-            <Paper className={styles.paper}>
-              <Box m={2} p={2}>
-                Header Buttons
+          <Grid item container xs={12} justify="flex-end">
+              <Box p={1}>
+                <IconButton
+                aria-label="account of current user"
+                aria-haspopup="true"
+                color="primary"
+                onClick={() => setDialog(true)}
+                >
+                <AddIcon />
+              </IconButton>
               </Box>
-            </Paper>
           </Grid>
           {appStore.wines.map(({id, batch, productionDate, shelfLife, categoryId, taskId}) => (
             <Grid key={id} item xs={12} sm={3}>
@@ -147,7 +159,7 @@ function Wines() {
                     <b>Batch:</b> {batch}
                   </Typography>
                   <Typography variant="body1">
-                    <b>Production:</b> {productionDate}
+                    <b>Production:</b> {productionDate.replace("T"," ")}
                   </Typography>
                   <Typography variant="body1">
                     <b>Shelf Life:</b> {shelfLife}
@@ -198,7 +210,7 @@ function Wines() {
                         <b>Batch:</b> {wineDetail ? wineDetail.batch : ""}
                       </Typography>
                       <Typography variant="body1">
-                        <b>Production:</b> {wineDetail ? wineDetail.productionDate : ""}
+                        <b>Production:</b> {wineDetail ? wineDetail.productionDate.replace("T"," ") : ""}
                       </Typography>
                       <Typography variant="body1">
                         <b>Shelf Life:</b> {wineDetail ? wineDetail.shelfLife : ""}
@@ -295,6 +307,16 @@ function Wines() {
           </Grid>
         </DialogContent>
       </Dialog>
+    
+      <CustomDialog
+        initialCategories={appStore.categories}
+        initialTasks={appStore.tasks}
+        initialWine={appStore.selectedWine}
+        dialog={dialog}
+        setDialog={setDialog}
+        onSubmit={onSubmit}
+      />
+    
     </div>
   );
 }

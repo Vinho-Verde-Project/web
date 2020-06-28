@@ -6,6 +6,7 @@ import Category from "../models/Category";
 import Product from "../models/Product";
 import Stock from "../models/Stock";
 import Wine from "../models/Wine";
+import Task from "../models/Task";
 import api from "../services/api";
 
 const appStore = observable({
@@ -23,6 +24,9 @@ const appStore = observable({
 
   wines: [],
   selectedWine: null,
+
+  tasks: [],
+  selectedTask: null,
 });
 
 appStore.fetchStatistics = action(() => {
@@ -445,6 +449,70 @@ appStore.setSelectedWine = action((id) => {
 
 appStore.clearSelectedWine = action(() => {
   appStore.selectedWine = null;
+});
+
+appStore.createWine = action(({ id=0, batch, productionDate, shelfLife, categoryId, taskId }) => {
+  const body = {
+    query: `
+      mutation($wine: InputWineType) {
+          addWine(wine:$wine) {
+            id
+            batch
+          }
+        }
+      `,
+    variables: `
+        {
+          "wine": ${JSON.stringify({
+            id: 0,
+            batch: batch,
+            productionDate: productionDate,
+            shelfLife: shelfLife,
+            categoryId: categoryId,
+            taskId: taskId,
+          })}
+        }
+      `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`createWine response with status ${status}`);
+        appStore.fetchWines();
+      });
+    })
+    .catch((err) => console.log(err));
+});
+
+//
+// Tasks
+//
+appStore.fetchTasks = action(() => {
+  const body = {
+    query: `{
+      tasks { 
+        id
+        startedAt
+        endedAt
+        status
+      }
+    }`,
+  };
+
+  api
+    .post("/", body)
+    .then(({ data }) => {
+      const { tasks } = data;
+      runInAction(() => {
+        appStore.tasks = tasks.map(
+          ({ id, startedAt, endedAt, status }) =>
+            new Task(id, startedAt, endedAt, status)
+        );
+      });
+    })
+    .catch((err) => console.log(err));
 });
 
 export default appStore;
