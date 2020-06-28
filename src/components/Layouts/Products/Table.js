@@ -32,21 +32,16 @@ export default function Table({ products = [], onEdit, onDelete }) {
           <TableRow>
             <TableCell className={classes.head}>Produto</TableCell>
             <TableCell className={classes.head}>Categoria</TableCell>
-            <TableCell className={classes.head}>Quantidade</TableCell>
             <TableCell></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {products.map(({ id, title, category, quantity, unity }) => (
+          {products.map(({ id, title, category }) => (
             <TableRow key={id}>
               <TableCell component="th" scope="row">
                 {title}
               </TableCell>
               <TableCell>{category.title}</TableCell>
-              <TableCell>
-                {quantity}&nbsp;
-                <small>{unity}</small>
-              </TableCell>
               <TableCell align="right">
                 <IconButton onClick={() => onEdit(id)}>
                   <EditIcon />

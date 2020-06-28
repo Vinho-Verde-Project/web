@@ -148,7 +148,7 @@ export default function Dialog({
           Cancelar
         </Button>
         <Button size="large" onClick={handleSubmit} color="primary">
-          Criar
+          {type === "CREATE" ? "Criar" : "Editar"}
         </Button>
       </DialogActions>
     </MaterialDialog>

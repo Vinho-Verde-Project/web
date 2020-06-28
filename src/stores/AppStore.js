@@ -160,53 +160,80 @@ appStore.createStock = action(
 //
 // Products
 //
-appStore.fetchProducts = action((filter) => {
-  appStore.products = [
-    new Product(
-      uuid(),
-      "Garrafa XYZ",
-      new Category(
-        "0101",
-        "Garrafa",
-        "RAW",
-        "Garrafa de vidro para armazenamento do vinho",
-        [
-          { key: "Volume", value: "ml" },
-          { key: "Diametro", value: "cm" },
-        ]
-      ),
-      10,
-      "Un.",
-      [
-        {
-          attribute: { key: "Volume", value: "ml" },
-          value: 500,
-        },
-        {
-          attribute: { key: "Diametro", value: "cm" },
-          value: 2,
-        },
-      ]
-    ),
-    new Product(
-      uuid(),
-      "Mosto para vinho X",
-      new Category(
-        uuid(),
-        "Mosto",
-        "WET",
-        "Mosto utilizado na produção de vinho",
-        []
-      ),
-      10,
-      "Litro",
-      []
-    ),
-  ].filter((product) => product.category.type === filter);
+appStore.fetchProducts = action(() => {
+  const body = {
+    query: `{
+      products {
+        id
+        desc
+        type
+        category {
+          id
+          desc
+          characteristics
+        }
+      }
+    }
+  `,
+  };
+  api
+    .post("/", body)
+    .then(({ data }) =>
+      runInAction(() => {
+        appStore.products = data.products.map(
+          ({ id, desc, type, category }) =>
+            new Product(
+              id,
+              desc,
+              new Category(
+                category.id,
+                category.desc,
+                category.characteristics
+              ),
+              type
+            )
+        );
+      })
+    )
+    .catch((err) => console.log(err));
 });
 
 appStore.deleteProduct = action((id) => {
-  appStore.products = appStore.products.filter((product) => product.id !== id);
+  console.log(id);
+
+  const { title, category, type } = appStore.products.find(
+    (product) => product.id === id
+  );
+
+  const body = {
+    query: `
+      mutation ($product: InputProductType) {
+        deleteProduct(product: $product) {
+          id
+        }
+      }
+    `,
+    variables: `
+      {
+        "product": ${JSON.stringify({
+          id,
+          desc: title,
+          categoryId: category.id,
+          type: type,
+        })}
+      }
+    `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`deleteProduct response with status ${status}`);
+        appStore.fetchProducts();
+      });
+    })
+    .catch((err) => console.log(err));
 });
 
 appStore.createProduct = action(({ title, category, type }) => {
@@ -225,7 +252,6 @@ appStore.createProduct = action(({ title, category, type }) => {
             desc: title,
             categoryId: category.id,
             type: type,
-            stepId: 1,
           })}
         }
       `,
@@ -233,32 +259,48 @@ appStore.createProduct = action(({ title, category, type }) => {
 
   api
     .post("/", body)
-    .then(({ status, ...response }) => {
+    .then(({ status, ...response }) =>
       runInAction(() => {
         console.log(`createProduct response with status ${status}`);
         console.log(response);
-        // appStore.fetchCategories();
-      });
-    })
+        appStore.fetchProducts();
+      })
+    )
     .catch((err) => console.log(err));
 });
 
-appStore.editProduct = action(
-  ({ id, title, category, quantity, unity, attributes }) => {
-    const index = appStore.products.findIndex((product) => product.id === id);
+appStore.editProduct = action(({ id, title, category, type }) => {
+  const body = {
+    query: `
+        mutation ($product: InputProductType) {
+          updateProduct(product: $product) {
+            id
+          }
+        }
+      `,
+    variables: `
+        {
+          "product": ${JSON.stringify({
+            id,
+            desc: title,
+            categoryId: category.id,
+            type: type,
+          })}
+        }
+      `,
+  };
 
-    if (index > -1) {
-      appStore.products[index] = new Product(
-        id,
-        title,
-        category,
-        quantity,
-        unity,
-        attributes
-      );
-    }
-  }
-);
+  api
+    .post("/", body)
+    .then(({ status, ...response }) =>
+      runInAction(() => {
+        console.log(`editProduct response with status ${status}`);
+        console.log(response);
+        appStore.fetchProducts();
+      })
+    )
+    .catch((err) => console.log(err));
+});
 
 appStore.setSelectedProduct = action((id) => {
   appStore.selectedProduct = appStore.products.find(
@@ -291,7 +333,7 @@ appStore.fetchCategories = action(() => {
       runInAction(() => {
         appStore.categories = categories.map(
           ({ id, desc, characteristics }) =>
-            new Category(id, desc, "RAW", characteristics, [])
+            new Category(id, desc, characteristics, [])
         );
       });
     })
@@ -442,18 +484,17 @@ appStore.fetchWines = action(() => {
 });
 
 appStore.setSelectedWine = action((id) => {
-  appStore.selectedWine = appStore.wines.find(
-    (wine) => wine.id === id
-  );
+  appStore.selectedWine = appStore.wines.find((wine) => wine.id === id);
 });
 
 appStore.clearSelectedWine = action(() => {
   appStore.selectedWine = null;
 });
 
-appStore.createWine = action(({ id=0, batch, productionDate, shelfLife, categoryId, taskId }) => {
-  const body = {
-    query: `
+appStore.createWine = action(
+  ({ id = 0, batch, productionDate, shelfLife, categoryId, taskId }) => {
+    const body = {
+      query: `
       mutation($wine: InputWineType) {
           addWine(wine:$wine) {
             id
@@ -461,7 +502,7 @@ appStore.createWine = action(({ id=0, batch, productionDate, shelfLife, category
           }
         }
       `,
-    variables: `
+      variables: `
         {
           "wine": ${JSON.stringify({
             id: 0,
@@ -473,18 +514,19 @@ appStore.createWine = action(({ id=0, batch, productionDate, shelfLife, category
           })}
         }
       `,
-  };
+    };
 
-  api
-    .post("/", body)
-    .then(({ status }) => {
-      runInAction(() => {
-        console.log(`createWine response with status ${status}`);
-        appStore.fetchWines();
-      });
-    })
-    .catch((err) => console.log(err));
-});
+    api
+      .post("/", body)
+      .then(({ status }) => {
+        runInAction(() => {
+          console.log(`createWine response with status ${status}`);
+          appStore.fetchWines();
+        });
+      })
+      .catch((err) => console.log(err));
+  }
+);
 
 //
 // Tasks
@@ -516,9 +558,7 @@ appStore.fetchTasks = action(() => {
 });
 
 appStore.setSelectedTask = action((id) => {
-  appStore.selectedTask = appStore.tasks.find(
-    (task) => task.id === id
-  );
+  appStore.selectedTask = appStore.tasks.find((task) => task.id === id);
 });
 
 appStore.clearSelectedTask = action(() => {
