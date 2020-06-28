@@ -10,7 +10,6 @@ import Table from "../components/Layouts/Products/Table";
 import Dialog from "../components/Layouts/Products/Dialog";
 import { observer } from "mobx-react";
 import useStores from "../stores/useStores";
-import _ from "lodash";
 
 function Products() {
   const [dialog, setDialog] = useState(false);
@@ -18,9 +17,8 @@ function Products() {
   const { appStore } = useStores();
 
   useEffect(() => {
-    appStore.fetchProducts(tab);
+    appStore.fetchProducts();
     appStore.fetchCategories();
-    console.log(appStore.categories);
   }, [appStore, tab]);
 
   // Clear Category Selection
@@ -78,7 +76,7 @@ function Products() {
           </div>
         </SectionHeader>
         <Table
-          products={appStore.products}
+          products={appStore.products.filter(({ type }) => type === tab)}
           onEdit={onEdit}
           onDelete={onDelete}
         />

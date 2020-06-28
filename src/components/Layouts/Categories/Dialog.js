@@ -39,7 +39,6 @@ function Dialog({
 }) {
   const defaultCategory = {
     title: "",
-    type: "RAW",
     description: "",
     attributes: [
       {
