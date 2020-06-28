@@ -48,7 +48,6 @@ function Login(props) {
     if (localStorage.getItem('WinnerUserPermissions')) {
       history.push('/dashboard');
     }
-    console.log("Rodou Effect");
   },[])
 
   const classes = useStyles();
