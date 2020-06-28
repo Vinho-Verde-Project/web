@@ -16,7 +16,7 @@ import api from "../services/api";
 import CustomDialog from "../components/Layouts/Wine/Dialog";
 import { IconButton } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
-
+import DeleteIcon from "@material-ui/icons/Delete";
 
 const styles = makeStyles((theme) => ({
   styles: {
@@ -59,16 +59,14 @@ function Wines() {
       appStore.clearSelectedWine();
     };
   
-    /*
     const onEdit = (id) => {
       appStore.setSelectedCategory(id);
       setDialog(true);
     };
   
     const onDelete = (id) => {
-      appStore.deleteCategory(id);
+      appStore.deleteWine(id);
     };
-    */
   
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [wineDetail, setWineDetail] = useState(null);
@@ -83,15 +81,15 @@ function Wines() {
           productionDate
           shelfLife
           stockWine {
-            stock {
-              id
-              quantity
-              warehouse
-              entryDate
-              employee {
+            quantity
+            entryDate
+            employee {
                 firstName
                 lastName
               }
+            stock {
+              id
+              title             
             }
           }
           category {
@@ -159,16 +157,22 @@ function Wines() {
                 </Box>
                 <Divider orientation="horizontal" />
                 <Box m={1}>
-                  <Button
-                    color="primary"
-                    size="large"
-                    className={styles.buttonNew}
-                    onClick={() => viewDetails(id)}
-                    endIcon={<AddCircleOutlineOutlinedIcon />}
-                  >
-                    View Details
-                  </Button>
+                  <Grid container justify="space-between">
+                    <Button
+                      color="primary"
+                      size="large"
+                      className={styles.buttonNew}
+                      onClick={() => viewDetails(id)}
+                      endIcon={<AddCircleOutlineOutlinedIcon />}
+                    >
+                      View Details
+                    </Button>
+                    <IconButton onClick={() => onDelete(id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Grid>
                 </Box>
+
               </Grid>
             </Paper>
           </Grid>
@@ -262,14 +266,14 @@ function Wines() {
               </Box>
             </Grid>
             {wineDetail ? 
-            wineDetail.stockWine.map(({stock}) => {
+            wineDetail.stockWine.map(({stock, quantity, employee, entryDate}) => {
               return (
                 <Grid key={"stock"+stock.id} item xs={6} sm={6}>
                 <Box p={2}>
                   <Paper style={{background: '#DCDCDC'}}>
                     <Grid container alignItems="stretch" direction="column">
                       <Box m={1}>
-                      <Typography variant="h5">Stock: {stock.id}</Typography>
+                      <Typography variant="h5">Stock: {stock.title}</Typography>
                       </Box>
                       <Divider orientation="horizontal" />
                       <Box m={1}>
@@ -277,16 +281,16 @@ function Wines() {
                           <b>ID:</b> {wineDetail ? stock.id : ""}
                         </Typography>
                         <Typography variant="body1">
-                          <b>Quantity:</b> {wineDetail ? stock.quantity : ""}
+                          <b>Quantity:</b> {wineDetail ? quantity : ""}
                         </Typography>
                         <Typography variant="body1">
-                          <b>WareHouse:</b> {wineDetail ? stock.warehouse : ""}
+                          <b>WareHouse:</b> {wineDetail ? stock.title : ""}
                         </Typography>
                         <Typography variant="body1">
-                          <b>Entry Date:</b> {wineDetail ? stock.entryDate : ""}
+                          <b>Entry Date:</b> {wineDetail ? entryDate : ""}
                         </Typography>
                         <Typography variant="body1">
-                          <b>Employer:</b> {wineDetail ? stock.employee.firstName + " " + stock.employee.lastName : ""}
+                          <b>Employer:</b> {wineDetail ? employee.firstName + " " + employee.lastName : ""}
                         </Typography>
                       </Box>
                     </Grid>

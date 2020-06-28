@@ -11,6 +11,8 @@ import {
   Snackbar,
 } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
+import api from "../services/api"
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,6 +42,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Login(props) {
+  let history = useHistory();
+
   const classes = useStyles();
   const [errorMsg, setErrorMsg] = React.useState({
     show: false,
@@ -68,6 +72,49 @@ function Login(props) {
         show: true,
       });
     }
+    
+      const body = {
+        query: `{
+          employeeEmail (email:"${email}", password:"${senha}") {    
+            id 
+            lastName    
+            role {
+              id
+              permission {
+                id
+              }  
+            }
+          }
+        }`,
+      };
+    
+      api
+        .post("/", body)
+        .then(({ data }) => {
+          const { employeeEmail } = data;
+          if (employeeEmail == null) {
+            return setErrorMsg({
+              msg: "Erro: Email ou Senha incorretos!",
+              show: true,
+            });
+          } else {
+            console.log(employeeEmail);
+            localStorage.setItem('WinnerUserID', employeeEmail.id);
+            localStorage.setItem('WinnerUserName', employeeEmail.lastName);
+            localStorage.setItem('WinnerUserPermissions', employeeEmail.role.permission.id);
+            history.push("/");
+            return null
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          return setErrorMsg({
+            msg: "Erro: Erro ao conectar com o servidor!",
+            show: true,
+          });
+        });
+
+    
   }
 
   return (
