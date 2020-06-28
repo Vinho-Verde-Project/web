@@ -557,4 +557,41 @@ appStore.createTask = action(({ id=0, startedAt, endedAt, status }) => {
     .catch((err) => console.log(err));
 });
 
+appStore.deleteTask = action((id) => {
+
+  const { startedAt, endedAt, status } = appStore.tasks.find(
+    (task) => task.id === id
+  );
+
+  const body = {
+    query: `
+    mutation($task: InputTaskType) {
+        deleteTask(task:$task) {
+          id
+        }
+      }
+    `,
+    variables: `
+      {
+        "task": ${JSON.stringify({
+          id: id,
+          startedAt: startedAt,
+          endedAt: endedAt,
+          status: status,
+        })}
+      }
+    `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`deleteTask response with status ${status}`);
+        appStore.fetchTasks();
+      });
+    })
+    .catch((err) => console.log(err));
+});
+
 export default appStore;
