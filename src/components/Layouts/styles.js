@@ -15,6 +15,14 @@ const LimitedSection = styled.div`
   justify-self: center;
 `;
 
+const LimitedSectionTwoCol = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 900px;
+  justify-self: center;
+`;
+
 const GridSection = styled(LimitedSection)`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -51,6 +59,7 @@ const BoldText = styled(Typography)`
 export {
   Section,
   LimitedSection,
+  LimitedSectionTwoCol,
   GridSection,
   ScrollSection,
   SectionHeader,

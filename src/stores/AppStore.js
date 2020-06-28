@@ -515,4 +515,14 @@ appStore.fetchTasks = action(() => {
     .catch((err) => console.log(err));
 });
 
+appStore.setSelectedTask = action((id) => {
+  appStore.selectedTask = appStore.tasks.find(
+    (task) => task.id === id
+  );
+});
+
+appStore.clearSelectedTask = action(() => {
+  appStore.selectedTask = null;
+});
+
 export default appStore;

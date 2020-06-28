@@ -70,12 +70,10 @@ function Wines() {
       appStore.deleteCategory(id);
     };
   
-  const time = new Date().toLocaleString();
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [wineDetail, setWineDetail] = useState(null);
 
-  function viewDetails(Wine) {
-    let {id,categoryId,taskId} = Wine
+  function viewDetails(id) {
 
     const body = {
       query: `{
@@ -171,7 +169,7 @@ function Wines() {
                     color="primary"
                     size="large"
                     className={styles.buttonNew}
-                    onClick={() => viewDetails({id,categoryId,taskId})}
+                    onClick={() => viewDetails(id)}
                     endIcon={<AddCircleOutlineOutlinedIcon />}
                   >
                     View Details
