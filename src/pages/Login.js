@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   CssBaseline,
@@ -12,7 +12,7 @@ import {
 } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import api from "../services/api"
-import { useHistory } from "react-router-dom";
+import { useHistory, Redirect, Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -43,6 +43,13 @@ const useStyles = makeStyles((theme) => ({
 
 function Login(props) {
   let history = useHistory();
+
+  useEffect(() => {
+    if (localStorage.getItem('WinnerUserPermissions')) {
+      history.push('/dashboard');
+    }
+    console.log("Rodou Effect");
+  },[])
 
   const classes = useStyles();
   const [errorMsg, setErrorMsg] = React.useState({
@@ -102,8 +109,7 @@ function Login(props) {
             localStorage.setItem('WinnerUserID', employeeEmail.id);
             localStorage.setItem('WinnerUserName', employeeEmail.lastName);
             localStorage.setItem('WinnerUserPermissions', employeeEmail.role.permission.id);
-            history.push("/");
-            return null
+            window.location.reload();
           }
         })
         .catch((err) => {
