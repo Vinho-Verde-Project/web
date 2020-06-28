@@ -38,29 +38,36 @@ export default function Table({ stocks = [], onEdit, onDelete }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {stocks.map(({ id, title, quantity, unity, warehouse, entryDate, employee }) => (
-            <TableRow key={id}>
-              <TableCell component="th" scope="row">
-                {title}
-              </TableCell>
-              <TableCell>{warehouse}</TableCell>
-              <TableCell>
-                {quantity}&nbsp;
-                <small>{unity}</small>
-              </TableCell>
-              <TableCell>
-                {entryDate}
-              </TableCell>
-              <TableCell align="right">
-                <IconButton onClick={() => onEdit(id)}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton onClick={() => onDelete(id)}>
-                  <DeleteIcon />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
+          {stocks.map(
+            ({
+              id,
+              product,
+              warehouse,
+              quantity = 0,
+              unity = "Un",
+              entryDate,
+            }) => (
+              <TableRow key={id}>
+                <TableCell component="th" scope="row">
+                  {product.title}
+                </TableCell>
+                <TableCell>{warehouse.title}</TableCell>
+                <TableCell>
+                  {quantity}&nbsp;
+                  <small>{unity}</small>
+                </TableCell>
+                <TableCell>{entryDate}</TableCell>
+                <TableCell align="right">
+                  <IconButton onClick={() => onEdit(id)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton onClick={() => onDelete(id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            )
+          )}
         </TableBody>
       </MaterialTable>
     </TableContainer>

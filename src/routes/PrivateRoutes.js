@@ -10,12 +10,14 @@ import Wine from "../pages/Wine";
 import Stock from "../pages/Stock";
 import Products from "../pages/Products";
 import Categories from "../pages/Categories";
+import Warehouse from "../pages/Warehouse";
 
 export default function PrivateRoutes() {
   return (
     <Layout>
       <Route path="/" exact component={Dashboard} />
       {/* Materials */}
+      <Route path="/warehouses" component={Warehouse} />
       <Route path="/stock" component={Stock} />
       <Route path="/products" component={Products} />
       <Route path="/categories" component={Categories} />

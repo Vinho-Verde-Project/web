@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid";
 import Category from "../models/Category";
 import Product from "../models/Product";
 import Stock from "../models/Stock";
+import Warehouse from "../models/Warehouse";
 import Wine from "../models/Wine";
 import Task from "../models/Task";
 import api from "../services/api";
@@ -18,6 +19,9 @@ const appStore = observable({
 
   categories: [],
   selectedCategory: null,
+
+  warehouses: [],
+  selectedWarehouse: null,
 
   stocks: [],
   selectedStock: null,
@@ -72,42 +76,127 @@ appStore.fetchFeed = action((filter) => {
 });
 
 //
+// Warehouse
+//
+appStore.fetchWarehouses = action(() => {
+  appStore.warehouses = [
+    new Warehouse(uuid(), "Armazém X"),
+    new Warehouse(uuid(), "Armazém Y"),
+    new Warehouse(uuid(), "Armazém Z"),
+  ];
+});
+
+appStore.createWarehouse = action(({ title }) => {
+  console.log("createWarehouse");
+  appStore.warehouses.push(new Warehouse(uuid(), title));
+});
+
+appStore.editWarehouse = action(({ id, title }) => {
+  console.log("editWarehouse");
+  console.log(id);
+});
+
+appStore.deleteWarehouse = action((id) => {
+  console.log("deleteWarehouse");
+  console.log(id);
+});
+
+appStore.setSelectedWarehouse = action((id) => {
+  appStore.selectedWarehouse = appStore.warehouses.find(
+    (warehouse) => warehouse.id === id
+  );
+});
+
+appStore.clearSelectedWarehouse = action(() => {
+  appStore.selectedWarehouse = null;
+});
+
+//
 // Stock
 //
-appStore.fetchStocks = action((filter) => {
+appStore.fetchStocks = action(() => {
   appStore.stocks = [
     new Stock(
       uuid(),
-      "Doce Campos",
-      "WET", // New -> Product/Wine
+      new Product(uuid(), "Product X", "", "RAW"),
+      new Warehouse(uuid(), "Warehouse X"),
+      "WINE",
+      10,
       100,
       "Un.",
-      "A2 Leste",
       new Date().toLocaleString(),
-      "Nuno Silva" // New -> Emplooye
+      "Nuno Silva"
     ),
     new Stock(
       uuid(),
-      "Gallard Premium",
-      "WET", // New -> Product/Wine
-      250,
-      "Un.",
-      "A5 Leste",
+      new Product(uuid(), "Product Y", "", "RAW"),
+      new Warehouse(uuid(), "Warehouse Y"),
+      "PRODUCT",
+      10,
+      100,
+      "ml.",
       new Date().toLocaleString(),
-      "Marcos Conti" // New -> Emplooye
+      "Nuno Silva"
     ),
-    new Stock(
-      uuid(),
-      "Uva Crimson",
-      "RAW", // New -> Product/Wine
-      88,
-      "KG",
-      "B4 Oeste",
-      new Date().toLocaleString(),
-      "Maria Joana" // New -> Emplooye
-    ),
-  ].filter((stock) => stock.type === filter);
+  ];
 });
+
+appStore.createStock = action(
+  ({
+    product,
+    warehouse,
+    type,
+    minQuantity,
+    quantity,
+    unity,
+    entryDate,
+    employee,
+  }) => {
+    appStore.stocks.push(
+      new Stock(
+        uuid(),
+        product,
+        warehouse,
+        type,
+        minQuantity,
+        quantity,
+        unity,
+        entryDate,
+        employee
+      )
+    );
+  }
+);
+
+appStore.editStock = action(
+  ({
+    id,
+    product,
+    warehouse,
+    type,
+    minQuantity,
+    quantity,
+    unity,
+    entryDate,
+    employee,
+  }) => {
+    const index = appStore.stocks.findIndex((stock) => stock.id === id);
+
+    if (index !== -1) {
+      appStore.stocks[index] = new Stock(
+        id,
+        product,
+        warehouse,
+        type,
+        minQuantity,
+        quantity,
+        unity,
+        entryDate,
+        employee
+      );
+    }
+  }
+);
 
 appStore.setSelectedStock = action((id) => {
   appStore.selectedStock = appStore.stocks.find((stock) => stock.id === id);
@@ -120,42 +209,6 @@ appStore.clearSelectedStock = action(() => {
 appStore.deleteStock = action((id) => {
   appStore.stocks = appStore.stocks.filter((stock) => stock.id !== id);
 });
-
-appStore.editStock = action(
-  ({ id, title, type, quantity, unity, warehouse, entryDate, employee }) => {
-    const index = appStore.stocks.findIndex((stock) => stock.id === id);
-
-    if (index !== -1) {
-      appStore.stocks[index] = new Stock(
-        id,
-        title,
-        type,
-        quantity,
-        unity,
-        warehouse,
-        entryDate,
-        employee
-      );
-    }
-  }
-);
-
-appStore.createStock = action(
-  ({ title, type, quantity, unity, warehouse, entryDate, employee }) => {
-    appStore.stocks.push(
-      new Stock(
-        uuid(),
-        title,
-        type,
-        quantity,
-        unity,
-        warehouse,
-        entryDate,
-        employee
-      )
-    );
-  }
-);
 
 //
 // Products
@@ -565,7 +618,7 @@ appStore.clearSelectedTask = action(() => {
   appStore.selectedTask = null;
 });
 
-appStore.createTask = action(({ id=0, startedAt, endedAt, status }) => {
+appStore.createTask = action(({ id = 0, startedAt, endedAt, status }) => {
   const body = {
     query: `
       mutation($task: InputTaskType) {

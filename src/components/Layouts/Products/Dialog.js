@@ -139,7 +139,7 @@ export default function Dialog({
             }
           >
             <MenuItem value="RAW">Seco</MenuItem>
-            <MenuItem value="WET">Molhado</MenuItem>
+            <MenuItem value="WET">Liquido</MenuItem>
           </Select>
         </FormControl>
       </DialogContent>
