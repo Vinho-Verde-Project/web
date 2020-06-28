@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid";
 import Category from "../models/Category";
 import Product from "../models/Product";
 import Stock from "../models/Stock";
+import Wine from "../models/Wine";
 import api from "../services/api";
 
 const appStore = observable({
@@ -19,6 +20,9 @@ const appStore = observable({
 
   stocks: [],
   selectedStock: null,
+
+  wines: [],
+  selectedWine: null,
 });
 
 appStore.fetchStatistics = action(() => {
@@ -400,6 +404,47 @@ appStore.setSelectedCategory = action((id) => {
 
 appStore.clearSelectedCategory = action(() => {
   appStore.selectedCategory = null;
+});
+
+//
+// Wines
+//
+appStore.fetchWines = action(() => {
+  const body = {
+    query: `{
+      wines {
+        id
+        batch
+        productionDate
+        shelfLife
+        categoryId
+        taskId
+      }
+    }`,
+  };
+
+  api
+    .post("/", body)
+    .then(({ data }) => {
+      const { wines } = data;
+      runInAction(() => {
+        appStore.wines = wines.map(
+          ({ id, batch, productionDate, shelfLife, categoryId, taskId }) =>
+            new Wine(id, batch, productionDate, shelfLife, categoryId, taskId)
+        );
+      });
+    })
+    .catch((err) => console.log(err));
+});
+
+appStore.setSelectedWine = action((id) => {
+  appStore.selectedWine = appStore.wines.find(
+    (wine) => wine.id === id
+  );
+});
+
+appStore.clearSelectedWine = action(() => {
+  appStore.selectedWine = null;
 });
 
 export default appStore;
