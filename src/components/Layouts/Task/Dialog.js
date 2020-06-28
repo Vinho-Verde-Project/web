@@ -34,82 +34,62 @@ const useStyles = makeStyles({
 });
 
 function Dialog({
-  initialTasks,
-  initialCategories,
-  initialWine,
+  initialTask,
   dialog = false,
   setDialog = () => {},
   onSubmit = () => {},
 }) {
-  const defaultWine = {
+  const defaultTask = {
     id: 0,
-    batch: "",
-    productionDate: null,
-    shelfLife: null,
-    categoryId: -1,
-    taskId: -1,
+    startedAt: null,
+    endedAt: null,
+    status: "",
   };
   const classes = useStyles();
-  const [Wine, setWine] = useState(defaultWine);
+  const [Task, setTask] = useState(defaultTask);
   const [type, setType] = useState("");
 
-  // Setup Wine on Edit or Create Mode
+  // Setup Task on Edit or Create Mode
   useEffect(() => {
-    if (dialog && !_.isEmpty(initialWine)) {
-      setWine(initialWine);
+    if (dialog && !_.isEmpty(initialTask)) {
+      setTask(initialTask);
       setType("EDIT");
     } else if (dialog) {
-      setWine(defaultWine);
+      setTask(defaultTask);
       setType("CREATE");
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dialog, initialWine]);
+  }, [dialog, initialTask]);
 
   const handleSubmit = () => {
-    onSubmit(type, Wine);
+    onSubmit(type, Task);
     setDialog(false);
-    setWine(defaultWine);
+    setTask(defaultTask);
   };
 
   return (
     <MaterialDialog
       open={dialog}
       onClose={() => setDialog(false)}
-      aria-labelledby="Wine-dialog"
+      aria-labelledby="Task-dialog"
     >
-      <DialogTitle id="Wine-dialog">
-        {type === "CREATE" ? "Criar" : "Editar"} Vinho
+      <DialogTitle id="Task-dialog">
+        {type === "CREATE" ? "Criar" : "Editar"} Tarefa
       </DialogTitle>
       <DialogContent>
         <FormControl className={classes.input}>
-          <TextField
-            id="batch"
-            label="Batch"
-            style={{ width: "100%" }}
-            placeholder="Batch"
-            variant="outlined"
-            value={Wine.batch}
-            onChange={({ target }) =>
-              setWine((state) => ({
-                ...state,
-                batch: target.value,
-              }))
-            }
-          />
-        </FormControl>
-        <FormControl className={classes.input}>
             <TextField
                 margin="dense"
-                id="productionDate"
-                label="Production Date"
+                id="dini"
+                label="Data e Hora de Início"
                 type="datetime-local"
-                placeholder="Production Date"
+                placeholder="Data e Hora de Início"
                 fullWidth
                 onChange={({target}) =>
-                    setWine((state) => ({
+                    setTask((state) => ({
                         ...state,
-                        productionDate: target.value,
+                        startedAt: target.value,
                 }))
                 }
                 InputLabelProps={{
@@ -120,15 +100,15 @@ function Dialog({
         <FormControl className={classes.input}>
             <TextField
                 margin="dense"
-                id="shelfLife"
-                label="Shelf Life"
-                type="date"
-                placeholder="Shelf Life"
+                id="dfim"
+                label="Data e Hora de Término"
+                type="datetime-local"
+                placeholder="Data e Hora de Término"
                 fullWidth
                 onChange={({target}) =>
-                    setWine((state) => ({
+                    setTask((state) => ({
                         ...state,
-                        shelfLife: target.value,
+                        endedAt: target.value,
                 }))
                 }
                 InputLabelProps={{
@@ -138,16 +118,16 @@ function Dialog({
         </FormControl>
         <FormControl className={classes.input}>
             <InputLabel shrink htmlFor="age-native-label-placeholder">
-            Select Category
+            Status
             </InputLabel>
             <Select
                 fullWidth
                 native
                 variant="standard"
                 onChange={({ target }) =>
-                    setWine((state) => ({
+                    setTask((state) => ({
                         ...state,
-                        categoryId: target.value,
+                        status: target.value,
                     }))
                 }
                 defaultValue={""}
@@ -156,44 +136,18 @@ function Dialog({
                     id: "standard-key-native-simple",
                 }}
             >
-                <option key={-1} value={-1}>
+                <option key={0} value={""}>
                     Select
                 </option>
-                {initialCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                    {category.title}
+                <option key={1} value={"active"}>
+                    Active
                 </option>
-                ))}
-            </Select>
-        </FormControl>
-        <FormControl className={classes.input}>
-            <InputLabel shrink htmlFor="age-native-label-placeholder">
-            Select Task
-            </InputLabel>
-            <Select
-                fullWidth
-                native
-                variant="standard"
-                onChange={({ target }) =>
-                    setWine((state) => ({
-                        ...state,
-                        taskId: target.value,
-                    }))
-                }
-                defaultValue={""}
-                inputProps={{
-                    name: "key",
-                    id: "standard-key-native-simple",
-                }}
-            >
-                <option key={-1} value={-1}>
-                    Select
+                <option key={2} value={"inactive"}>
+                    Inactive
                 </option>
-                {initialTasks.map((task) => (
-                <option key={task.id} value={task.id}>
-                     ID: {task.id} - Started: {task.startedAt} ({task.status})
+                <option key={3} value={"finished"}>
+                    Finished
                 </option>
-                ))}
             </Select>
         </FormControl>
       </DialogContent>

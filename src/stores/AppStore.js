@@ -525,4 +525,36 @@ appStore.clearSelectedTask = action(() => {
   appStore.selectedTask = null;
 });
 
+appStore.createTask = action(({ id=0, startedAt, endedAt, status }) => {
+  const body = {
+    query: `
+      mutation($task: InputTaskType) {
+        addTask(task:$task){
+            id
+          }
+        }
+      `,
+    variables: `
+        {
+          "task": ${JSON.stringify({
+            id: 0,
+            startedAt: startedAt,
+            endedAt: endedAt,
+            status: status,
+          })}
+        }
+      `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`createTask response with status ${status}`);
+        appStore.fetchTasks();
+      });
+    })
+    .catch((err) => console.log(err));
+});
+
 export default appStore;
