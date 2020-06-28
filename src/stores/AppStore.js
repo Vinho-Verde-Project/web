@@ -79,26 +79,120 @@ appStore.fetchFeed = action((filter) => {
 // Warehouse
 //
 appStore.fetchWarehouses = action(() => {
-  appStore.warehouses = [
-    new Warehouse(uuid(), "Armazém X"),
-    new Warehouse(uuid(), "Armazém Y"),
-    new Warehouse(uuid(), "Armazém Z"),
-  ];
+  const body = {
+    query: `{
+      stocks {
+        id
+        title
+      }
+    }
+  `,
+  };
+  api
+    .post("/", body)
+    .then(({ data }) =>
+      runInAction(() => {
+        appStore.warehouses = data.stocks.map(
+          ({ id, title }) => new Warehouse(id, title)
+        );
+      })
+    )
+    .catch((err) => console.log(err));
 });
 
 appStore.createWarehouse = action(({ title }) => {
-  console.log("createWarehouse");
-  appStore.warehouses.push(new Warehouse(uuid(), title));
+  const body = {
+    query: `
+      mutation ($stock: InputStockType) {
+        addStock(stock: $stock) {
+          id
+        }
+      }
+
+      `,
+    variables: `
+        {
+          "stock": ${JSON.stringify({
+            id: 0,
+            title,
+          })}
+        }
+      `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) =>
+      runInAction(() => {
+        console.log(`createWarehouse response with status ${status}`);
+        appStore.fetchWarehouses();
+      })
+    )
+    .catch((err) => console.log(err));
 });
 
 appStore.editWarehouse = action(({ id, title }) => {
-  console.log("editWarehouse");
-  console.log(id);
+  const body = {
+    query: `
+      mutation ($stock: InputStockType) {
+        updateStock(stock: $stock) {
+          id
+        }
+      }
+    `,
+    variables: `
+      {
+        "stock": ${JSON.stringify({
+          id,
+          title,
+        })}
+      }
+    `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) =>
+      runInAction(() => {
+        console.log(`editWarehouse response with status ${status}`);
+        appStore.fetchWarehouses();
+      })
+    )
+    .catch((err) => console.log(err));
 });
 
 appStore.deleteWarehouse = action((id) => {
-  console.log("deleteWarehouse");
-  console.log(id);
+  const { title } = appStore.warehouses.find(
+    (warehouse) => warehouse.id === id
+  );
+
+  const body = {
+    query: `
+      mutation ($stock: InputStockType) {
+        deleteStock(stock: $stock) {
+          id
+        }
+      }
+    `,
+    variables: `
+      {
+        "stock": ${JSON.stringify({
+          id,
+          title,
+        })}
+      }
+    `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) =>
+      runInAction(() => {
+        console.log(`editWarehouse response with status ${status}`);
+        appStore.fetchWarehouses();
+      })
+    )
+    .catch((err) => console.log(err));
 });
 
 appStore.setSelectedWarehouse = action((id) => {
