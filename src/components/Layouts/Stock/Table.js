@@ -7,11 +7,8 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  IconButton,
   makeStyles,
 } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
 
 const useStyles = makeStyles({
   table: {
@@ -22,7 +19,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function Table({ stocks = [], onEdit, onDelete }) {
+export default function Table({ stocks = [] }) {
   const classes = useStyles();
 
   return (
@@ -34,7 +31,6 @@ export default function Table({ stocks = [], onEdit, onDelete }) {
             <TableCell className={classes.head}>Armazém</TableCell>
             <TableCell className={classes.head}>Quantidade</TableCell>
             <TableCell className={classes.head}>Data de Entrada</TableCell>
-            <TableCell></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -45,26 +41,19 @@ export default function Table({ stocks = [], onEdit, onDelete }) {
               warehouse,
               quantity = 0,
               unity = "Un",
+              type,
               entryDate,
             }) => (
               <TableRow key={id}>
                 <TableCell component="th" scope="row">
-                  {product.title}
+                  {type === "PRODUCT" ? product.title : product.batch}
                 </TableCell>
-                <TableCell>{warehouse.title}</TableCell>
+                <TableCell>{warehouse.id}</TableCell>
                 <TableCell>
                   {quantity}&nbsp;
                   <small>{unity}</small>
                 </TableCell>
                 <TableCell>{entryDate}</TableCell>
-                <TableCell align="right">
-                  <IconButton onClick={() => onEdit(id)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => onDelete(id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
               </TableRow>
             )
           )}

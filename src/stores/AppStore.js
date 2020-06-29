@@ -209,30 +209,106 @@ appStore.clearSelectedWarehouse = action(() => {
 // Stock
 //
 appStore.fetchStocks = action(() => {
-  appStore.stocks = [
-    new Stock(
-      uuid(),
-      new Product(uuid(), "Product X", "", "RAW"),
-      new Warehouse(uuid(), "Warehouse X"),
-      "WINE",
-      10,
-      100,
-      "Un.",
-      new Date().toLocaleString(),
-      "Nuno Silva"
-    ),
-    new Stock(
-      uuid(),
-      new Product(uuid(), "Product Y", "", "RAW"),
-      new Warehouse(uuid(), "Warehouse Y"),
-      "PRODUCT",
-      10,
-      100,
-      "ml.",
-      new Date().toLocaleString(),
-      "Nuno Silva"
-    ),
-  ];
+  const body = {
+    query: `{
+      products {
+        id
+        desc
+        type
+        category {
+          id
+        }
+        stockProduct {
+          quantity
+          minQantity
+          unit
+          entryDate
+          stock {
+            id
+            title
+          }
+        }
+      }  
+      wines {
+        id 
+        batch
+        productionDate
+        shelfLife
+        categoryId
+        taskId
+        stockWine {
+          quantity
+          unit
+          entryDate
+          stock {
+            id
+            title
+          }
+        }
+      }
+    }
+    `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ data }) =>
+      runInAction(() => {
+        console.log(data);
+        appStore.stocks = [
+          ...data.products.flatMap(
+            ({ id, desc, type, category, stockProduct = [] }) =>
+              stockProduct.flatMap(
+                ({ stock, minQantity, quantity, unit, entryDate }) =>
+                  new Stock(
+                    uuid(),
+                    new Product(id, desc, category, type),
+                    new Warehouse(stock.id, stock.title),
+                    "PRODUCT",
+                    minQantity,
+                    quantity,
+                    unit,
+                    entryDate,
+                    ""
+                  )
+              )
+          ),
+          ...data.wines.flatMap(
+            ({
+              id,
+              batch,
+              productionDate,
+              shelfLife,
+              categoryId,
+              taskId,
+              stockWine = [],
+            }) =>
+              stockWine.flatMap(
+                ({ stock, quantity, unit, entryDate }) =>
+                  new Stock(
+                    uuid(),
+                    new Wine(
+                      id,
+                      batch,
+                      productionDate,
+                      shelfLife,
+                      categoryId,
+                      taskId
+                    ),
+                    new Warehouse(stock.id, stock.title),
+                    "WINE",
+                    0,
+                    quantity,
+                    unit,
+                    entryDate,
+                    ""
+                  )
+              )
+          ),
+        ];
+      })
+    )
+    .catch((err) => console.log(err));
 });
 
 appStore.createStock = action(
@@ -246,49 +322,64 @@ appStore.createStock = action(
     entryDate,
     employee,
   }) => {
-    appStore.stocks.push(
-      new Stock(
-        uuid(),
-        product,
-        warehouse,
-        type,
-        minQuantity,
-        quantity,
-        unity,
-        entryDate,
-        employee
+    const body =
+      type === "PRODUCT"
+        ? {
+            query: `
+              mutation ($stockProduct: InputStockProductType) {
+                addStockProduct(stockProduct:$stockProduct) {
+                  stockId
+                  productId
+                }
+              }
+            `,
+            variables: `
+              {
+                "stockProduct": ${JSON.stringify({
+                  stockId: warehouse.id,
+                  productId: product.id,
+                  minQantity: minQuantity,
+                  quantity,
+                  unit: unity,
+                  employeeId: 1,
+                  entryDate: entryDate,
+                })}
+              }
+            `,
+          }
+        : {
+            query: `
+              mutation ($stockWine: InputStockWineType) {
+                addStockWine(stockWine:$stockWine) {
+                  stockId
+                  wineId
+                }
+              }
+            `,
+            variables: `
+              {
+                "stockWine": ${JSON.stringify({
+                  stockId: warehouse.id,
+                  wineId: product.id,
+                  quantity,
+                  unit: unity,
+                  employeeId: 1,
+                  entryDate: entryDate,
+                })}
+              }
+            `,
+          };
+
+    api
+      .post("/", body)
+      .then(({ status, ...response }) =>
+        runInAction(() => {
+          console.log(`createStock response with status ${status}`);
+          console.log(response);
+          appStore.fetchStocks();
+        })
       )
-    );
-  }
-);
-
-appStore.editStock = action(
-  ({
-    id,
-    product,
-    warehouse,
-    type,
-    minQuantity,
-    quantity,
-    unity,
-    entryDate,
-    employee,
-  }) => {
-    const index = appStore.stocks.findIndex((stock) => stock.id === id);
-
-    if (index !== -1) {
-      appStore.stocks[index] = new Stock(
-        id,
-        product,
-        warehouse,
-        type,
-        minQuantity,
-        quantity,
-        unity,
-        entryDate,
-        employee
-      );
-    }
+      .catch((err) => console.log(err));
   }
 );
 
@@ -298,10 +389,6 @@ appStore.setSelectedStock = action((id) => {
 
 appStore.clearSelectedStock = action(() => {
   appStore.selectedStock = null;
-});
-
-appStore.deleteStock = action((id) => {
-  appStore.stocks = appStore.stocks.filter((stock) => stock.id !== id);
 });
 
 //
@@ -323,6 +410,7 @@ appStore.fetchProducts = action(() => {
     }
   `,
   };
+
   api
     .post("/", body)
     .then(({ data }) =>
