@@ -10,7 +10,7 @@ import {
 } from "@material-ui/core";
 import _ from "lodash";
 import DashboardIcon from "@material-ui/icons/Dashboard";
-import InboxIcon from "@material-ui/icons/Inbox";
+import InboxIcon from "@material-ui/icons/MoveToInbox";
 import TagIcon from "@material-ui/icons/LocalOffer";
 import CategoryIcon from "@material-ui/icons/Label";
 import WineIcon from "@material-ui/icons/LocalBar";
@@ -18,6 +18,7 @@ import LayersIcon from "@material-ui/icons/Layers";
 import DoneIcon from "@material-ui/icons/Done";
 import GroupIcon from "@material-ui/icons/Group";
 import LockIcon from "@material-ui/icons/Lock";
+import StoreIcon from "@material-ui/icons/Storefront";
 import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
@@ -40,7 +41,12 @@ export default function SideBar({ isOpen }) {
         name: "Gerenciamento",
         group: [
           {
-            name: "Estoque",
+            name: "Armazéns",
+            path: "/warehouses",
+            icon: <StoreIcon />,
+          },
+          {
+            name: "Itens em estoque",
             path: "/stock",
             icon: <InboxIcon />,
           },

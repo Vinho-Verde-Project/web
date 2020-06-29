@@ -10,6 +10,7 @@ import Wine from "../pages/Wine";
 import Stock from "../pages/Stock";
 import Products from "../pages/Products";
 import Categories from "../pages/Categories";
+import Warehouse from "../pages/Warehouse";
 
 export default function PrivateRoutes() {
   const [permissionsMap,setPermissionsMap] = useState({
@@ -51,6 +52,7 @@ export default function PrivateRoutes() {
     <Layout>
       <Route path="/" exact component={Dashboard} />
       {/* Materials */}
+      <Route path="/warehouses" component={Warehouse} />
 
       { permissionsMap[1] === true ? (
       <Route path="/categories" component={Categories} />

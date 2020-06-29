@@ -34,43 +34,47 @@ const useStyles = makeStyles({
 });
 
 export default function Dialog({
-  categories,
+  warehouses = [],
+  products = [],
+  wines = [],
   initialStock,
   onSubmit = () => {},
   dialog = false,
   setDialog = () => {},
 }) {
   const defaultStock = {
-    title: "",
-    type: "",
-    quantity: "",
-    unity: "",
-    warehouse: "",
+    id: "",
+    product: {
+      id: "",
+    },
+    warehouse: {
+      id: "",
+    },
+    type: "PRODUCT",
+    minQuantity: 0,
+    quantity: 0,
+    unity: "Un",
     entryDate: new Date().toLocaleString(),
     employee: "",
   };
   const classes = useStyles();
   const [stock, setStock] = useState(defaultStock);
+  const [type, setType] = useState("");
 
-  // Setup Category on Edit or Create Mode
   useEffect(() => {
-    if (!_.isEmpty(initialStock)) {
+    if (dialog && !_.isEmpty(initialStock)) {
       setStock(initialStock);
-    } else {
+      setType("EDIT");
+    } else if (dialog) {
       setStock(defaultStock);
+      setType("CREATE");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialStock]);
 
-  const setCategory = ({ target }) => {
-    setStock((state) => ({
-      ...state,
-      type: target.value,
-    }));
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dialog, initialStock]);
 
   const handleSubmit = () => {
-    onSubmit(stock);
+    onSubmit(type, stock);
     setDialog(false);
     setStock(defaultStock);
   };
@@ -82,25 +86,31 @@ export default function Dialog({
       aria-labelledby="stock-dialog"
     >
       <DialogTitle id="stock-dialog">
-        {_.isEmpty(stock.id) ? "Novo" : "Editar"} Estoque
+        {type === "CREATE" ? "Criar" : "Editar"} Item em Estoque
       </DialogTitle>
       <DialogContent>
         <FormControl className={classes.input}>
-          <TextField
-            id="title"
-            label="Titulo"
-            style={{ width: "100%" }}
-            placeholder="Garrafas"
+          <InputLabel id="warhouse-label">Armazém</InputLabel>
+          <Select
+            id="warhouse"
+            labelId="warhouse-label"
             variant="outlined"
-            value={stock.title}
+            value={stock.warehouse.id}
             onChange={({ target }) =>
               setStock((state) => ({
                 ...state,
-                title: target.value,
+                warehouse: { id: target.value },
               }))
             }
-          />
+          >
+            {warehouses.map((item) => (
+              <MenuItem key={item.id} value={item.id}>
+                {item.title}
+              </MenuItem>
+            ))}
+          </Select>
         </FormControl>
+
         <FormControl className={classes.input}>
           <InputLabel id="type-label">Tipo</InputLabel>
           <Select
@@ -108,14 +118,46 @@ export default function Dialog({
             labelId="type-label"
             variant="outlined"
             value={stock.type}
-            onChange={setCategory}
-            disabled={_.isEmpty(stock.id) ? false : true}
+            onChange={({ target }) =>
+              setStock((state) => ({
+                ...state,
+                type: target.value,
+              }))
+            }
           >
-            {categories.map((cat) => (
-              <MenuItem key={cat.id} value={cat.id}>
-                {cat.title}
-              </MenuItem>
-            ))}
+            <MenuItem value="PRODUCT">Produto</MenuItem>
+            <MenuItem value="WINE">Vinho</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl className={classes.input}>
+          <InputLabel id="product-label">
+            {stock.type === "WINE" ? "Vinho" : "Produto"}
+          </InputLabel>
+          <Select
+            id="product"
+            labelId="product-label"
+            variant="outlined"
+            value={stock.product.id}
+            onChange={({ target }) =>
+              setStock((state) => ({
+                ...state,
+                product: { id: target.value },
+              }))
+            }
+          >
+            {stock.type === "WINE" &&
+              wines.map((item) => (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.batch}
+                </MenuItem>
+              ))}
+            {stock.type === "PRODUCT" &&
+              products.map((item) => (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.title}
+                </MenuItem>
+              ))}
           </Select>
         </FormControl>
 
@@ -151,18 +193,18 @@ export default function Dialog({
 
         <FormControl className={classes.input}>
           <TextField
-            id="warehouse"
-            label="Armazém"
-            style={{ width: "100%" }}
-            placeholder="Nome do Armazém"
+            id="minquantity"
+            label="Quantidade Minima"
+            placeholder="0"
             variant="outlined"
-            value={stock.warehouse}
-            onChange={({ target }) =>
+            type="number"
+            value={stock.minQuantity}
+            onChange={({ target }) => {
               setStock((state) => ({
                 ...state,
-                warehouse: target.value,
-              }))
-            }
+                minQuantity: target.value,
+              }));
+            }}
           />
         </FormControl>
 
@@ -199,15 +241,13 @@ export default function Dialog({
             }
           />
         </FormControl>
-        
-
       </DialogContent>
       <DialogActions>
         <Button size="large" onClick={() => setDialog(false)}>
           Cancelar
         </Button>
         <Button size="large" onClick={handleSubmit} color="primary">
-          Criar
+          {type === "CREATE" ? "Criar" : "Editar"}
         </Button>
       </DialogActions>
     </MaterialDialog>
