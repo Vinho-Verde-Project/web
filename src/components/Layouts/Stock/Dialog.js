@@ -55,7 +55,7 @@ export default function Dialog({
     quantity: 0,
     unity: "Un",
     entryDate: new Date().toLocaleString(),
-    employee: "",
+    employee: localStorage.getItem('WinnerUserID'),
   };
   const classes = useStyles();
   const [stock, setStock] = useState(defaultStock);
@@ -232,7 +232,8 @@ export default function Dialog({
             style={{ width: "100%" }}
             placeholder="Funcionário"
             variant="outlined"
-            value={stock.employee}
+            inputProps={{ readOnly: true }}
+            defaultValue={localStorage.getItem('WinnerUserID')+" - "+localStorage.getItem('WinnerUserName')}
             onChange={({ target }) =>
               setStock((state) => ({
                 ...state,
