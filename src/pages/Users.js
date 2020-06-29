@@ -5,7 +5,7 @@ import AddOutlinedIcon from '@material-ui/icons/AddOutlined';
 import ReactPhoneInput from 'react-phone-input-mui';
 import CustomGrid from '../components/Layouts/User/CustomGrid';
 import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, InputLabel, Select } from '@material-ui/core';
-
+import api from '../services/api';
 
 const useStyles = makeStyles((theme) => ({
   defaultMargin: {
@@ -64,30 +64,62 @@ export default function Users() {
     { key: 'actions', name: 'Actions', width: 80 },
   ].map(c => ({ ...c, ...defaultColumnProperties }));
   
-  const rows = [
+  const [updateRequest, setUpdateRequest] = useState(true);
+
+  const [rows,setRows] = useState([
+    /*
     {id: 0, name: 'Ros Main', role: 'Assistant', username: 'paiaco', phone: '351912030399', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
     {id: 1, name: 'Calvin Malk', role: 'Engineer', username: 'paiaco', phone: '2141212412', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
     {id: 2, name: 'Wester Park', role: 'Developer', username: 'paiaco', phone: '64564644589', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
     {id: 3, name: 'Filer Ispor', role: 'Cloud Expert', username: 'paiaco', phone: '2654869345', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
     {id: 4, name: 'Catrine Bors', role: 'Lead Design', username: 'paiaco', phone: '0988776970', email: 'ros@gmail.com', birthday: '12/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
-  ];
+    */
+  ]);
 
-  const roleList = [
-    {id: 0, name: 'Assistant'},
+  const [roleList,setRoleList] = useState([
+    /*{id: 0, name: 'Assistant'},
     {id: 1, name: 'Engineer'},
     {id: 2, name: 'Developer'},
     {id: 3, name: 'Cloud Expert'},
-    {id: 4, name: 'Lead Design'}
-  ]
+    {id: 4, name: 'Lead Design'}*/
+  ]);
+
+  const [isEdit,setIsEdit] = useState(false);
 
   const [dialogOpen, setdialogOpen] = useState(false);
-  const [dialogContent, setdialogContent] = useState( (i => { i = rows[0]; return i = {}}) );
+  const [dialogContent, setdialogContent] = useState({
+    id: null, 
+    name: null,
+    firstName: null,
+    lastName: null, 
+    nif: null, 
+    role: null ,
+    username: null, 
+    phone: null, 
+    email: null, 
+    birthday: null, 
+    address: null, 
+    password: null,
+    passwordConfirm: null,
+  });
 
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [removeDialogContent, setRemoveDialogContent] = useState( {
-    id: null,
-    name: '',
+    id: null, 
+    name: null,
+    firstName: null,
+    lastName: null, 
+    nif: null, 
+    role: null ,
+    username: null, 
+    phone: null, 
+    email: null, 
+    birthday: null, 
+    address: null, 
+    hashedPassword: null,
+    createdAt: null,
+    roleId: null
   });
 
   const handleDialogOpen = () => {
@@ -99,31 +131,192 @@ export default function Users() {
   };
 
   function handleEditUser(data) {
+    setIsEdit(true);
     setdialogContent(data);
     return handleDialogOpen();
   }
 
   function handleNewUser() {
+    setIsEdit(false);
     setdialogContent( i => { i = rows[0]; return i = {}} );
     return handleDialogOpen();
   }
 
   function handleRemoveUser(data) {
-    setRemoveDialogContent({ id: data.id, name: data.name });
+    setRemoveDialogContent(data);
     setRemoveDialogOpen(true);
   }
 
   function handleRemoveDialog() {
-    setRemoveDialogOpen(false);
-    const data = {
-      id: removeDialogContent.id
-    };
-    console.log("Envia um chamada DELETE com:",data);
+
+    api.post('/', {
+      "query": "mutation($employee: InputEmployeeType) {deleteEmployee(employee:$employee){ id username }}",
+      "variables": `{"employee":{
+      "id":${removeDialogContent.id},
+      "username":"${removeDialogContent.username}",
+      "firstName":"${removeDialogContent.firstName}",
+      "lastName":"${removeDialogContent.lastName}",
+      "nif":"${removeDialogContent.nif}",
+      "birthdate":"${removeDialogContent.birthday}",
+      "adress":"${removeDialogContent.address}",
+      "phone":"${removeDialogContent.phone}",
+      "email":"${removeDialogContent.email}",
+      "hashedPassword":"${removeDialogContent.hashedPassword}",
+      "createdAt":"12/25/2015",
+      "roleId":${removeDialogContent.roleId}
+    }}`
+    }).then(function (response3) {
+      alert("User Removed!");
+      setUpdateRequest(!updateRequest);
+      setRemoveDialogOpen(false);
+    }).catch(function (error3) {
+      alert("Error when trying to remove the User!");
+    });
+  }
+
+  const [onceRolesLoad,setOnceRolesLoad] = useState(true);
+
+  /*function loadRoles() {
+    api.post('/', {
+      "query": `{roles { id desc }}`
+    }).then(function (response) {
+      let newRow = [];
+      response.data.roles.map((role) => {
+        newRow.push({id: role.id, name: role.desc});
+      });
+      setRoleList(newRow);
+      
+    }).catch(function (error) {
+      console.log("Erro: ",error);
+    });
+  }*/
+
+  function handleDialogSendEditUser() {
+    api.post('/', {
+      "query": "mutation($employee: InputEmployeeType) {updateEmployee(employee:$employee){ id username }}",
+      "variables": `{"employee":{
+      "id":${dialogContent.id},
+      "username":"${dialogContent.username}",
+      "firstName":"${dialogContent.firstName}",
+      "lastName":"${dialogContent.lastName}",
+      "nif":"${dialogContent.nif}",
+      "birthdate":"${dialogContent.birthday}",
+      "adress":"${dialogContent.address}",
+      "phone":"${dialogContent.phone}",
+      "email":"${dialogContent.email}",
+      "hashedPassword":"${dialogContent.password}",
+      "createdAt":"12/25/2015",
+      "roleId":${dialogContent.roleId}
+    }}`
+    }).then(function (response3) {
+      alert("User Modify Success!");
+      handleDialogClose();
+      setUpdateRequest(!updateRequest);
+    }).catch(function (error3) {
+      alert("Error when trying to modify the User!");
+    });
+  }
+
+  function handleDialogSendNewUser() {
+
+    if (dialogContent.firstName === null || dialogContent.lastName === "") {
+      return alert("First/Last Name Missing!");
+    }
+
+    if (dialogContent.password !== dialogContent.passwordConfirm) {
+      return alert("The passwords does not match!");
+    }
+
+    api.post('/', {
+      "query": "mutation($employee: InputEmployeeType) {addEmployee(employee:$employee){ id username }}",
+      "variables": `{"employee":{
+      "id":0,
+      "username":"${dialogContent.username}",
+      "firstName":"${dialogContent.firstName}",
+      "lastName":"${dialogContent.lastName}",
+      "nif":"${dialogContent.nif}",
+      "birthdate":"${dialogContent.birthday}",
+      "adress":"${dialogContent.address}",
+      "phone":"${dialogContent.phone}",
+      "email":"${dialogContent.email}",
+      "hashedPassword":"${dialogContent.password}",
+      "createdAt":"12/25/2015",
+      "roleId":${dialogContent.roleId}
+    }}`
+    }).then(function (response2) {
+      console.log("Criado-User: ",response2);
+      alert("User Registred!");
+      handleDialogClose();
+      setUpdateRequest(!updateRequest);
+    }).catch(function (error2) {
+      console.log("Error: ");
+      console.log(error2);
+      alert("Error when trying to register! Verify your inputs!");
+    });
+      /* else {
+        api.post('/', {
+          "query": "mutation($role: InputRoleType) {addRole(role:$role){ id desc permissionId }}",
+          "variables": `{"role":{"id":0,"desc":"${dialogContent.name}","permissionId":${calcPermission()}}}`
+        }).then(function (response4) {
+          console.log("Criado-Role (com permissao ja existente): ",response4);
+          setUpdateRequest(!updateRequest);
+        }).catch(function (error4) {
+          console.log("Erro3: ",error4);
+        });
+      }
+    }).catch(function (error) {
+      console.log("Erro: ",error);
+      alert("Erro ao cadastrar!\nTente novamente");
+    });*/
+  }
+
+  function updateTable() {
+    api.post('/', {
+      "query": `{  employees {
+        id
+        username
+        firstName
+        lastName
+        nif
+        birthdate
+        adress
+        phone
+        email
+        hashedPassword      
+        roleId
+      }
+      roles { id desc permissionId }
+    }`
+    }).then(function (response) {
+      // Get Roles
+      let newRowRoles = [];
+      response.data.roles.map((role) => {
+        newRowRoles.push({id: role.id, name: role.desc});
+      });
+      setRoleList(newRowRoles);
+
+      //{id: 0, name: 'Ros Main', role: 'Assistant', username: 'paiaco', phone: '351912030399', email: 'ros@gmail.com', birthday: '20/04/1991', address: 'Rua Ernani Batista, 925', actions: ''},
+      let newRowUsers = [];
+      response.data.employees.map((row) => {
+        //let rowName = roleList.reduce(roleItem => role.roleId === roleItem.id);
+        newRowUsers.push({id: row.id, name: row.firstName + " " + row.lastName, firstName: row.firstName, lastName: row.lastName, nif: row.nif, role: newRowRoles.filter(rl => rl.id === row.roleId)[0].name, roleId: row.roleId, username: row.username, phone: row.phone, email: row.email, birthday: row.birthdate, address: row.adress, password: row.hashedPassword , actions: ''});
+      });
+      setRows(newRowUsers);
+      
+    }).catch(function (error) {
+      console.log("Erro: ",error);
+    });
   }
 
   useEffect(() => {
-    // effectCarregarUsuarios
-  }, []);
+    //if (onceRolesLoad) {
+      //setOnceRolesLoad(false);
+      //loadRoles();
+      //updateTable();
+    //} else {
+      updateTable();
+    //}
+  }, [updateRequest]);
 
   return (
   <>
@@ -151,19 +344,27 @@ export default function Users() {
 
 
     <Dialog open={dialogOpen} onClose={handleDialogClose} aria-labelledby="form-dialog-title">
-      <DialogTitle id="form-dialog-title">{dialogContent && dialogContent.name ? 'Edit User' : 'Register New User'}</DialogTitle>
+      <DialogTitle id="form-dialog-title">{isEdit ? 'Edit User' : 'Register New User'}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {dialogContent && dialogContent.name ? 'Formulary to modify data of an existing user.' : 'Formulary to register new user.'}
+          {isEdit ? 'Formulary to modify data of an existing user.' : 'Formulary to register new user.'}
         </DialogContentText>
 
         <TextField
           autoFocus
           margin="dense"
           id="name"
-          label="Full Name"
-          defaultValue={dialogContent ? dialogContent.name : ''}
-          fullWidth
+          label="First Name"
+          defaultValue={isEdit ? dialogContent.firstName : ''}
+          onChange={(e) => setdialogContent({ ...dialogContent, firstName: e.target.value })}
+        />
+        <TextField
+          margin="dense"
+          id="lastname"
+          label="Last Name"
+          defaultValue={isEdit ? dialogContent.lastName : ''}
+          onChange={(e) => setdialogContent({ ...dialogContent, lastName: e.target.value })}
+
         />
         <Grid container direction="row" justify="space-evenly">
           <Grid item xs={6}>
@@ -174,7 +375,8 @@ export default function Users() {
                 label="NIF"
                 fullWidth
                 type="number"
-                defaultValue={dialogContent ? dialogContent.name : ''}
+                defaultValue={isEdit ? dialogContent.nif : ''}
+                onChange={(e) => setdialogContent({ ...dialogContent, nif: e.target.value })}
               /></Box>
           </Grid>
           <Grid item xs={6}>
@@ -185,7 +387,8 @@ export default function Users() {
                 label="Birthday Date"
                 type="date"
                 fullWidth
-                defaultValue={dialogContent && dialogContent.birthday ? convertDate(dialogContent.birthday) : ''}
+                defaultValue={isEdit ? convertDate(dialogContent.birthday) : ''}
+                onChange={(e) => setdialogContent({ ...dialogContent, birthday: e.target.value })}
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -197,7 +400,8 @@ export default function Users() {
           margin="dense"
           id="address"
           label="Full Address"
-          defaultValue={dialogContent ? dialogContent.address : ''}
+          onChange={(e) => setdialogContent({ ...dialogContent, address: e.target.value })}
+          defaultValue={isEdit ? dialogContent.address : ''}
           fullWidth
         />
         <Grid container direction="row" justify="space-evenly" alignItems="flex-end">
@@ -207,7 +411,8 @@ export default function Users() {
               id="email"
               label="Email Address"
               type="email"
-              defaultValue={dialogContent ? dialogContent.email : ''}
+              defaultValue={isEdit ? dialogContent.email : ''}
+              onChange={(e) => setdialogContent({ ...dialogContent, email: e.target.value })}
               fullWidth
             /></Box>
           <Box marginLeft={1}>
@@ -217,6 +422,7 @@ export default function Users() {
               inputClass={classes.field}
               regions={'europe'}
               component={TextField}
+              onChange={(e) => setdialogContent({ ...dialogContent, phone: e })}
               dropdownClass={classes.countryList}
               inputExtraProps={{
                 margin: 'normal',
@@ -235,7 +441,8 @@ export default function Users() {
                 id="username"
                 label="UserName"
                 fullWidth
-                defaultValue={dialogContent ? dialogContent.username : ''}
+                onChange={(e) => setdialogContent({ ...dialogContent, username: e.target.value })}
+                defaultValue={isEdit ? dialogContent.username : ''}
               /></Box>
           </Grid>
           <Grid item xs={6}>
@@ -245,15 +452,16 @@ export default function Users() {
                 fullWidth
                 native
                 variant='standard'
-                onChange={(e) => setdialogContent({ ...dialogContent, role: e.target.value })}
-                value={dialogContent.role}
+                onChange={(e) => setdialogContent({ ...dialogContent, roleId: e.target.value })}
+                defaultValue={isEdit ? dialogContent.roleId : ""}
                 inputProps={{
                   name: 'key',
                   id: 'standard-key-native-simple',
                 }}
               >
+                <option key={-1} value={-1}>Select</option>
                 {roleList.map(role => (
-                  <option key={role.id} value={role.name}>{role.name}</option>)
+                  <option key={role.id} value={role.id}>{role.name}</option>)
                 )}
               </Select>
             </Box>
@@ -266,7 +474,8 @@ export default function Users() {
               id="pass"
               label="Password"
               type="password"
-              defaultValue={""}
+              onChange={(e) => setdialogContent({ ...dialogContent, password: e.target.value })}
+              defaultValue={isEdit ? dialogContent.password : ''}
             /></Box>
           <Box ml={1}>
             <TextField
@@ -274,7 +483,8 @@ export default function Users() {
               id="passconf"
               label="Password Confirmation"
               type="password"
-              defaultValue={""}
+              onChange={(e) => setdialogContent({ ...dialogContent, passwordConfirm: e.target.value })}
+              defaultValue={isEdit ? dialogContent.password : ''}
             />
           </Box>
         </Grid>
@@ -283,8 +493,8 @@ export default function Users() {
         <Button onClick={handleDialogClose} size="large" color="primary">
           Cancel
         </Button>
-        <Button onClick={handleDialogClose} size="large" className={dialogContent && dialogContent.name ? classes.modalButtonEdit : classes.modalButtonRegister}>
-          {dialogContent && dialogContent.name ? 'Save Edit' : 'Register'}
+        <Button onClick={isEdit ? handleDialogSendEditUser : handleDialogSendNewUser} size="large" className={isEdit ? classes.modalButtonEdit : classes.modalButtonRegister}>
+          {isEdit ? 'Save Edit' : 'Register'}
         </Button>
       </DialogActions>
     </Dialog>

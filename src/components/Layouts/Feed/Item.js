@@ -1,13 +1,12 @@
 import React from "react";
 import styled from "styled-components";
-import { Card, CardHeader, Chip, Typography } from "@material-ui/core";
+import { Card, CardHeader, Chip } from "@material-ui/core";
 import DoneIcon from "@material-ui/icons/DoneAll";
 
 const StyledCard = styled(Card)`
   display: flex;
-  flex: 1;
-  height: 200px;
   flex-direction: row;
+  height: auto;
   overflow: hidden;
 `;
 const StyledImage = styled.div`
@@ -21,6 +20,7 @@ const StyledImage = styled.div`
 
 const StyledContent = styled.div`
   display: grid;
+  min-width: 350px;
   grid-template-rows: auto 1fr;
   flex: 1;
   overflow: hidden;
@@ -32,7 +32,7 @@ const StyledHeader = styled(CardHeader)`
   width: 100%;
 `;
 
-export default function FeedItem() {
+export default function FeedItem({ title, subheader, status, markdown }) {
   return (
     <StyledCard>
       <StyledImage>
@@ -40,20 +40,12 @@ export default function FeedItem() {
       </StyledImage>
       <StyledContent>
         <StyledHeader
-          title={"100.12.3.2020"}
-          subheader={"Vinho Verde"}
-          action={<Chip icon={<DoneIcon />} label="Concluido" />}
+          title={title}
+          subheader={subheader}
+          action={<Chip icon={<DoneIcon />} label={status} />}
         />
         <div>
-          <Typography variant="h6">Produção</Typography>
-          <div>
-            <Typography paragraph>
-              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Odio,
-              nemo voluptate debitis autem quos, maxime officiis architecto
-              officia porro inventore iusto minima cumque, laborum repellendus?
-              Similique repellendus quisquam dicta esse?
-            </Typography>
-          </div>
+          <p>{markdown}</p>
         </div>
       </StyledContent>
     </StyledCard>
