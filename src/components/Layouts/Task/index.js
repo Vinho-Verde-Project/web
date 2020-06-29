@@ -15,6 +15,9 @@ import {
 import DoneIcon from "@material-ui/icons/Done";
 import ReportIcon from "@material-ui/icons/Report";
 import styled from "styled-components";
+import DeleteIcon from "@material-ui/icons/Delete";
+import EditIcon from "@material-ui/icons/Edit";
+
 
 const StyledCard = styled(Card)`
   display: flex;
@@ -74,6 +77,10 @@ function Task() {
       appStore.clearSelectedTask();
     };
 
+    const onDelete = (id) => {
+      appStore.deleteTask(id);
+    };
+
   return (
     <Section>
       <SectionHeader justify="end">
@@ -115,11 +122,8 @@ function Task() {
           </StyledCardContent>
         </div>
         <StyledCardActions>
-          <IconButton>
-            <ReportIcon />
-          </IconButton>
-          <IconButton>
-            <DoneIcon />
+          <IconButton onClick={() => onDelete(id)}>
+            <DeleteIcon />
           </IconButton>
         </StyledCardActions>
       </StyledCard>

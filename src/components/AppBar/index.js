@@ -12,6 +12,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 import SearchIcon from "@material-ui/icons/Search";
 import SettingsIcon from "@material-ui/icons/Settings";
 import AccountIcon from "@material-ui/icons/AccountCircle";
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
 const StyledBar = styled(Bar)`
   display: flex;
@@ -65,6 +66,14 @@ const Container = styled(Toolbar)`
 `;
 
 export default function AppBar({ toogleDrawer }) {
+
+  const doLogout = () => {
+    localStorage.removeItem("WinnerUserID")
+    localStorage.removeItem("WinnerUserName")
+    localStorage.removeItem("WinnerUserPermissions")
+    window.location.reload()
+  }
+
   return (
     <StyledBar position="static" elevation={0}>
       <Container>
@@ -102,6 +111,15 @@ export default function AppBar({ toogleDrawer }) {
         >
           <AccountIcon />
         </IconButton>
+        <IconButton
+          aria-label="account of current user"
+          aria-haspopup="true"
+          color="inherit"
+          onClick={() => doLogout()}
+        >
+          <ExitToAppIcon />
+        </IconButton>
+        
       </Container>
     </StyledBar>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   CssBaseline,
@@ -11,6 +11,8 @@ import {
   Snackbar,
 } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
+import api from "../services/api"
+import { useHistory, Redirect, Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,6 +42,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Login(props) {
+  let history = useHistory();
+
+  useEffect(() => {
+    if (localStorage.getItem('WinnerUserPermissions')) {
+      history.push('/dashboard');
+    }
+  },[])
+
   const classes = useStyles();
   const [errorMsg, setErrorMsg] = React.useState({
     show: false,
@@ -68,6 +78,48 @@ function Login(props) {
         show: true,
       });
     }
+    
+      const body = {
+        query: `{
+          employeeEmail (email:"${email}", password:"${senha}") {    
+            id 
+            lastName    
+            role {
+              id
+              permission {
+                id
+              }  
+            }
+          }
+        }`,
+      };
+    
+      api
+        .post("/", body)
+        .then(({ data }) => {
+          const { employeeEmail } = data;
+          if (employeeEmail == null) {
+            return setErrorMsg({
+              msg: "Erro: Email ou Senha incorretos!",
+              show: true,
+            });
+          } else {
+            console.log(employeeEmail);
+            localStorage.setItem('WinnerUserID', employeeEmail.id);
+            localStorage.setItem('WinnerUserName', employeeEmail.lastName);
+            localStorage.setItem('WinnerUserPermissions', employeeEmail.role.permission.id);
+            window.location.reload();
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          return setErrorMsg({
+            msg: "Erro: Erro ao conectar com o servidor!",
+            show: true,
+          });
+        });
+
+    
   }
 
   return (

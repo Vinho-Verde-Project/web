@@ -763,6 +763,45 @@ appStore.createWine = action(
   }
 );
 
+appStore.deleteWine = action((id) => {
+
+  const { batch, productionDate, shelfLife, categoryId, taskId  } = appStore.wines.find(
+    (wine) => wine.id === id
+  );
+
+  const body = {
+    query: `
+    mutation($wine: InputWineType) {
+        deleteWine(wine:$wine) {
+          id
+        }
+      }
+    `,
+    variables: `
+      {
+        "wine": ${JSON.stringify({
+          id: id,
+          batch: batch,
+          productionDate: productionDate,
+          shelfLife: shelfLife,
+          categoryId: categoryId,
+          taskId: taskId,
+        })}
+      }
+    `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`deleteWine response with status ${status}`);
+        appStore.fetchWines();
+      });
+    })
+    .catch((err) => console.log(err));
+});
+
 //
 // Tasks
 //
@@ -826,6 +865,43 @@ appStore.createTask = action(({ id = 0, startedAt, endedAt, status }) => {
     .then(({ status }) => {
       runInAction(() => {
         console.log(`createTask response with status ${status}`);
+        appStore.fetchTasks();
+      });
+    })
+    .catch((err) => console.log(err));
+});
+
+appStore.deleteTask = action((id) => {
+
+  const { startedAt, endedAt, status } = appStore.tasks.find(
+    (task) => task.id === id
+  );
+
+  const body = {
+    query: `
+    mutation($task: InputTaskType) {
+        deleteTask(task:$task) {
+          id
+        }
+      }
+    `,
+    variables: `
+      {
+        "task": ${JSON.stringify({
+          id: id,
+          startedAt: startedAt,
+          endedAt: endedAt,
+          status: status,
+        })}
+      }
+    `,
+  };
+
+  api
+    .post("/", body)
+    .then(({ status }) => {
+      runInAction(() => {
+        console.log(`deleteTask response with status ${status}`);
         appStore.fetchTasks();
       });
     })
